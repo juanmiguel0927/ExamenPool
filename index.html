@@ -58,6 +58,7 @@
         const X = (p) => <IconBase {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
         const GraduationCap = (p) => <IconBase {...p}><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></IconBase>;
         const Check = (p) => <IconBase {...p}><polyline points="20 6 9 17 4 12"/></IconBase>;
+        const List = (p) => <IconBase {...p}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></IconBase>;
 
         // --- CONFIGURACIÓN ---
         const PDF_RAW_URL = "https://cdn.jsdelivr.net/gh/juanmiguel0927/ExamenPool@5eae9e124ba5a7b3353ea766ce4533d87b00b94a/All.pdf";
@@ -75,6 +76,26 @@
             { name_es: "Semiprofesional", min: 250, color: "text-orange-500", bg: "bg-orange-100" },
             { name_es: "Maestro", min: 300, color: "text-red-600", bg: "bg-red-100" },
             { name_es: "Leyenda", min: 350, color: "text-yellow-600", bg: "bg-yellow-100" }
+        ];
+
+        // --- DATOS ---
+        const glossaryTerms = [
+            { term: "CB (Cue Ball)", def_en: "The white ball struck by the cue.", def_es: "Bola Blanca (Mingo). La bola blanca golpeada por el taco." },
+            { term: "OB (Object Ball)", def_en: "The ball the cue ball strikes.", def_es: "Bola Objetivo. La bola a la que golpea la bola blanca." },
+            { term: "BIH (Ball In Hand)", def_en: "Player can place the cue ball anywhere on the table.", def_es: "Bola en Mano. El jugador puede colocar la bola blanca en cualquier lugar de la mesa." },
+            { term: "Cut Shot", def_en: "A shot where the CB strikes the OB at an angle.", def_es: "Tiro de Corte / Fina. Un tiro donde la blanca golpea la objetivo en ángulo." },
+            { term: "Stop Shot", def_en: "The CB stops immediately after contacting the OB.", def_es: "Tiro de Stop / Clavada. La blanca se detiene inmediatamente tras el impacto." },
+            { term: "Follow Shot", def_en: "The CB continues forward after contact (top spin).", def_es: "Tiro Corrido / Follow. La blanca sigue hacia adelante (efecto arriba)." },
+            { term: "Draw Shot", def_en: "The CB spins backwards after contact (back spin).", def_es: "Tiro de Retroceso / Draw / Jalar. La blanca retrocede (efecto abajo)." },
+            { term: "Stun Shot", def_en: "The CB slides into the OB with no forward/backward roll.", def_es: "Tiro Seco / Stun. La blanca golpea deslizando sin rotación, saliendo en la línea tangente." },
+            { term: "Ghost Ball", def_en: "Imaginary position of the CB at the moment of impact.", def_es: "Bola Fantasma. Posición imaginaria de la blanca en el momento del impacto." },
+            { term: "Rail / Cushion", def_en: "The padded sides of the table.", def_es: "Banda. Los lados acolchados de la mesa." },
+            { term: "Scratch", def_en: "Pocketing the Cue Ball (foul).", def_es: "Suicidio / Mingo / Falta. Embocar la bola blanca." },
+            { term: "Diamond", def_en: "Markers on the rails used for aiming.", def_es: "Diamante. Marcadores en las bandas usados para apuntar." },
+            { term: "Safety", def_en: "Defensive shot aiming to leave the opponent difficult.", def_es: "Defensa. Tiro defensivo para dejar al oponente en una situación difícil." },
+            { term: "Bank Shot", def_en: "Driving an OB into a rail to pocket it.", def_es: "Tiro de Banda / Doblete. Golpear una bola objetivo contra una banda para embocarla." },
+            { term: "Kick Shot", def_en: "Driving the CB into a rail to hit an OB.", def_es: "Tiro de Retruque / Bricol. Golpear la blanca contra una banda antes de dar a la objetivo." },
+            { term: "Masse", def_en: "Curving the CB path using extreme elevation and spin.", def_es: "Massé. Curvar la trayectoria de la blanca usando elevación y efecto." }
         ];
 
         // --- GENERADORES DE DATOS ---
@@ -126,6 +147,30 @@
                 id: "PPC-18", name: "Ejercicio 18", desc: "Layout 18 de PPC.", pdf_page: 77, max_score: 100, total_shots: 1, scoringType: 'deduction',
                 subDrills: [{ id: "PPC-18", name: "Layout 18", max_score: 100, total_shots: 1, scoringType: 'deduction' }]
             });
+            return drills;
+        };
+
+        // Generador Examen VI (Safety Challenge) - Agrupado 2 por página
+        const generateExam6Drills = () => {
+            const drills = [];
+            // 20 drills, 2 por página. Páginas 78 a 87.
+            for (let i = 1; i <= 20; i += 2) {
+                const page = 78 + Math.floor((i - 1) / 2);
+                const id1 = `Safe${i}`;
+                const id2 = `Safe${i+1}`;
+                
+                drills.push({
+                    id: `${id1}-${id2}`,
+                    name: `Defensas ${i} y ${i+1}`,
+                    desc: "Ejercicios de Seguridad (Pares).",
+                    pdf_page: page,
+                    isGroup: true,
+                    subDrills: [
+                        { id: id1, name: `Defensa ${i}`, max_score: 1, total_shots: 1, scoringType: 'count' },
+                        { id: id2, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count' }
+                    ]
+                });
+            }
             return drills;
         };
 
@@ -191,9 +236,7 @@
             },
             VI: {
                 id: "VI", title: "Desafío de Seguridad", desc: "20 Tiros defensivos.",
-                drills: Array.from({length: 20}, (_, i) => ({
-                    id: `Safe${i+1}`, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count', pdf_page: 78 + Math.floor(i/2)
-                }))
+                drills: generateExam6Drills()
             }
         };
 
@@ -210,10 +253,10 @@
                 const handleReset = () => updateScore(examId, drill.id, 0);
 
                 return (
-                    <div className="bg-red-50 p-4 rounded-xl border border-red-100 shadow-sm">
-                        <div className="flex justify-between items-center mb-3">
+                    <div className="bg-red-50 p-4 rounded-xl border border-red-100 shadow-sm relative">
+                        <button onClick={handleReset} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1" title="Reiniciar"><RotateCcw size={16}/></button>
+                        <div className="flex justify-between items-center mb-3 pr-6">
                             <div><h4 className="font-bold text-red-900">{drill.name}</h4><span className="text-xs text-red-400 font-bold uppercase">Faltas/Errores: {errors}</span></div>
-                            <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
                         </div>
                         <div className="flex gap-3 items-center justify-center bg-white p-2 rounded-lg border border-red-100">
                             <button onClick={handleSubError} className="w-10 h-10 rounded-full bg-gray-100 text-red-600 hover:bg-red-50 flex items-center justify-center transition"><Minus size={18}/></button>
@@ -234,10 +277,10 @@
             const handleReset = () => { updateScore(examId, drill.id, 0); setAttemptsMade(0); };
 
             return (
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex justify-between items-center mb-3">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm relative">
+                    <button onClick={handleReset} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1" title="Reiniciar"><RotateCcw size={16}/></button>
+                    <div className="flex justify-between items-center mb-3 pr-6">
                         <div><h4 className="font-bold text-gray-800">{drill.name}</h4><span className="text-xs text-gray-400 font-bold uppercase">{currentScore} Aciertos / {attemptsMade} Intentos</span></div>
-                        <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
                     </div>
                     <div className="flex gap-3 mb-2">
                         <button onClick={handleMiss} disabled={attemptsMade >= totalShots} className="flex-1 bg-red-100 text-red-600 border border-red-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-red-200 active:scale-95 disabled:opacity-50">Fallo</button>
@@ -255,6 +298,7 @@
             const [attemptsMade, setAttemptsMade] = useState(0);
             useEffect(() => { if (currentScore > 0 && attemptsMade === 0) { /* Sync if needed */ } }, []);
 
+            // Progressive Scoring (F1-F5)
             if (drill.scoringType === 'progressive') {
                 const [pos, setPos] = useState(0);
                 const [bonus, setBonus] = useState(0);
@@ -262,6 +306,7 @@
                 const update = (newPos, newBonus) => { let p = Math.max(0, Math.min(7, newPos)); let b = Math.max(0, newBonus); if (p < 7) b = 0; if (p + b > 10) b = 10 - p; setPos(p); setBonus(b); onScoreChange(p + b); };
                 return (
                     <div className="flex flex-col h-full p-6 relative">
+                        {/* Botón Reiniciar a la izquierda */}
                         <button onClick={onReset} className="absolute top-0 left-0 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2" title="Reiniciar"><RotateCcw size={16} /> Reiniciar</button>
                         <h3 className="text-xl font-black text-gray-800 uppercase text-center mb-6">{drill.name}</h3>
                         <div className="flex-grow flex flex-col gap-6 justify-center">
@@ -273,16 +318,15 @@
                 );
             }
 
-            // Standard Count (Acierto/Fallo)
+            // Standard Count
             const handleHit = () => { if (attemptsMade < totalShots) { onScoreChange(Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
             const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
             const handleLocalReset = () => { onReset(); setAttemptsMade(0); }
 
             return (
                 <div className="flex flex-col h-full p-8 items-center justify-between relative">
-                     {/* REINICIAR MOVIDO A LA IZQUIERDA PARA EVITAR X */}
+                    {/* Botón Reiniciar a la izquierda */}
                     <button onClick={handleLocalReset} className="absolute top-0 left-0 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2 hover:bg-gray-100 rounded-lg"><RotateCcw size={16} /> Reiniciar</button>
-                    
                     <div className="text-center w-full mt-8">
                         <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">{drill.id}</div>
                         <div className="text-6xl font-black text-gray-900 mb-2 tracking-tighter leading-none">{currentScore} <span className="text-4xl text-gray-300 font-medium">/ {totalShots}</span></div>
@@ -299,7 +343,6 @@
             );
         };
 
-        // --- Practice Modal con soporte para Grupos ---
         const PracticeModalFinal = ({ drill, score, onScoreChange, onClose, onNextDrill, isLastDrill, level, examId, updateScore, allExamScores }) => {
             let pdfPage = drill.pdf_page;
             if (typeof pdfPage === 'object' && pdfPage !== null) { pdfPage = pdfPage[level] || pdfPage['Bachelors']; }
@@ -308,13 +351,12 @@
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
                     <div className="bg-white w-full max-w-7xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in-zoom border border-gray-200">
-                        {/* X GLOBAL DE CIERRE SIEMPRE VISIBLE EN ESQUINA SUPERIOR DERECHA */}
-                        <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white hover:bg-gray-100 text-gray-800 p-2 rounded-full shadow-md transition border border-gray-200"><X size={24} /></button>
-
+                        <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
                         <div className="w-full md:w-7/12 bg-gray-100 border-r border-gray-200 relative flex flex-col">
                              <iframe key={drill.id} src={getPdfViewerUrl(pdfPage)} className="w-full h-full border-none bg-gray-50" title="Diagrama"></iframe>
                         </div>
                         <div className="w-full md:w-5/12 bg-white flex flex-col relative z-20 overflow-y-auto">
+                             <div className="absolute top-4 right-4 hidden md:block"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition"><X size={24} /></button></div>
                             {isMultiDrill ? (
                                 <div className="p-8 flex flex-col h-full">
                                     <div className="mb-6 text-center"><h2 className="text-2xl font-black text-gray-900 mb-1">{drill.name}</h2><p className="text-sm text-gray-500">{drill.desc}</p></div>
@@ -332,7 +374,7 @@
             );
         };
 
-        // --- RESTO APP (Login, ExamCard, ExamDetail, etc.) ---
+        // --- RESTO APP ---
         const LoginScreen = ({ onLogin }) => {
             const [username, setUsername] = useState("");
             return (<div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4"><div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center"><div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><Target className="text-white w-8 h-8" /></div><h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1><p className="text-gray-500 mb-6">Ingresa tu nombre para comenzar</p><form onSubmit={(e) => { e.preventDefault(); if(username.trim()) onLogin(username.trim()); }}><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus /><button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Comenzar Entrenamiento</button></form></div></div>);
