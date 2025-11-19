@@ -32,7 +32,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- ICONOS INTEGRADOS (SVG) ---
+        // --- ICONOS ---
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
@@ -60,12 +60,9 @@
         const Check = (p) => <IconBase {...p}><polyline points="20 6 9 17 4 12"/></IconBase>;
         const List = (p) => <IconBase {...p}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></IconBase>;
 
-        // --- CONFIGURACIÓN ---
+        // --- CONFIG & DATOS ---
         const PDF_RAW_URL = "https://cdn.jsdelivr.net/gh/juanmiguel0927/ExamenPool@5eae9e124ba5a7b3353ea766ce4533d87b00b94a/All.pdf";
-        
-        const getPdfViewerUrl = (page) => {
-            return `${PDF_RAW_URL}#page=${page}&view=FitH&toolbar=0&navpanes=0`;
-        };
+        const getPdfViewerUrl = (page) => `${PDF_RAW_URL}#page=${page}&view=FitH&toolbar=0&navpanes=0`;
 
         const LEVELS = [
             { name_es: "Novato", min: 0, color: "text-gray-500", bg: "bg-gray-100" },
@@ -78,483 +75,262 @@
             { name_es: "Leyenda", min: 350, color: "text-yellow-600", bg: "bg-yellow-100" }
         ];
 
-        // --- DATOS ---
         const glossaryTerms = [
-            { term: "CB (Cue Ball)", def_en: "The white ball struck by the cue.", def_es: "Bola Blanca (Mingo). La bola blanca golpeada por el taco." },
-            { term: "OB (Object Ball)", def_en: "The ball the cue ball strikes.", def_es: "Bola Objetivo. La bola a la que golpea la bola blanca." },
-            { term: "BIH (Ball In Hand)", def_en: "Player can place the cue ball anywhere on the table.", def_es: "Bola en Mano. El jugador puede colocar la bola blanca en cualquier lugar de la mesa." },
-            { term: "Cut Shot", def_en: "A shot where the CB strikes the OB at an angle.", def_es: "Tiro de Corte / Fina. Un tiro donde la blanca golpea la objetivo en ángulo." },
-            { term: "Stop Shot", def_en: "The CB stops immediately after contacting the OB.", def_es: "Tiro de Stop / Clavada. La blanca se detiene inmediatamente tras el impacto." },
-            { term: "Follow Shot", def_en: "The CB continues forward after contact (top spin).", def_es: "Tiro Corrido / Follow. La blanca sigue hacia adelante (efecto arriba)." },
-            { term: "Draw Shot", def_en: "The CB spins backwards after contact (back spin).", def_es: "Tiro de Retroceso / Draw / Jalar. La blanca retrocede (efecto abajo)." },
-            { term: "Stun Shot", def_en: "The CB slides into the OB with no forward/backward roll.", def_es: "Tiro Seco / Stun. La blanca golpea deslizando sin rotación, saliendo en la línea tangente." },
-            { term: "Ghost Ball", def_en: "Imaginary position of the CB at the moment of impact.", def_es: "Bola Fantasma. Posición imaginaria de la blanca en el momento del impacto." },
-            { term: "Rail / Cushion", def_en: "The padded sides of the table.", def_es: "Banda. Los lados acolchados de la mesa." },
-            { term: "Scratch", def_en: "Pocketing the Cue Ball (foul).", def_es: "Suicidio / Mingo / Falta. Embocar la bola blanca." },
-            { term: "Diamond", def_en: "Markers on the rails used for aiming.", def_es: "Diamante. Marcadores en las bandas usados para apuntar." },
-            { term: "Safety", def_en: "Defensive shot aiming to leave the opponent difficult.", def_es: "Defensa. Tiro defensivo para dejar al oponente en una situación difícil." },
-            { term: "Bank Shot", def_en: "Driving an OB into a rail to pocket it.", def_es: "Tiro de Banda / Doblete. Golpear una bola objetivo contra una banda para embocarla." },
-            { term: "Kick Shot", def_en: "Driving the CB into a rail to hit an OB.", def_es: "Tiro de Retruque / Bricol. Golpear la blanca contra una banda antes de dar a la objetivo." },
-            { term: "Masse", def_en: "Curving the CB path using extreme elevation and spin.", def_es: "Massé. Curvar la trayectoria de la blanca usando elevación y efecto." }
+            { term: "CB", def_es: "Bola Blanca (Cue Ball)." },
+            { term: "OB", def_es: "Bola Objetivo (Object Ball)." },
+            { term: "BIH", def_es: "Bola en Mano." },
+            { term: "Cut Shot", def_es: "Tiro de Corte / Fina." },
+            { term: "Stop Shot", def_es: "Tiro de Stop / Clavada." },
+            { term: "Follow Shot", def_es: "Tiro Corrido (Efecto arriba)." },
+            { term: "Draw Shot", def_es: "Tiro de Retroceso (Efecto abajo)." },
+            { term: "Stun Shot", def_es: "Tiro Seco." },
+            { term: "Ghost Ball", def_es: "Bola Fantasma (Referencia)." },
+            { term: "Rail", def_es: "Banda." },
+            { term: "Scratch", def_es: "Falta (Mingo)." }
         ];
 
-        // --- ESTRUCTURA DE EXÁMENES ACTUALIZADA CON PÁGINAS ---
+        // GENERADOR EXAMEN III
+        const generateExam3Drills = () => {
+            const drills = [];
+            drills.push({
+                id: "A1", name: "Tiro A1", desc: "Práctica de tiro avanzado.", pdf_page: 51, max_score: 4, total_shots: 3, scoringType: 'count',
+                subDrills: [{ id: "A1", name: "Tiro A1", max_score: 4, total_shots: 3, scoringType: 'count' }]
+            });
+            for (let i = 2; i <= 25; i += 2) {
+                const page = 52 + (i - 2) / 2;
+                const id1 = `A${i}`;
+                const id2 = `A${i+1}`;
+                drills.push({
+                    id: `${id1}-${id2}`,
+                    name: `Tiros ${id1} y ${id2}`,
+                    desc: "Práctica de tiros avanzados (Pares).",
+                    pdf_page: page,
+                    isGroup: true,
+                    subDrills: [
+                        { id: id1, name: `Tiro ${id1}`, max_score: 4, total_shots: 3, scoringType: 'count' },
+                        { id: id2, name: `Tiro ${id2}`, max_score: 4, total_shots: 3, scoringType: 'count' }
+                    ]
+                });
+            }
+            return drills;
+        };
+
         const examsData = {
             I: {
-                id: "I",
-                title: "Examen I - Fundamentos",
-                desc: "Ejercicios progresivos para evaluar postura, golpe y control básico.",
+                id: "I", title: "Examen I - Fundamentos", desc: "Ejercicios progresivos básicos.",
                 drills: [
-                    { id: "F1", name: "Tiro de Corte", desc: "Práctica progresiva. 10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive' },
-                    { id: "F2", name: "Tiro de Stop", desc: "Detener CB en zona fantasma.", max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive' },
-                    { id: "F3", name: "Tiro Corrido", desc: "Seguir a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive' },
-                    { id: "F4", name: "Tiro de Retroceso", desc: "Retroceder a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive' },
-                    { id: "F5", name: "Tiro Seco (Stun)", desc: "Control de stun a objetivos.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' },
-                    { id: "F6", name: "Embocar Bolas", desc: "Sin tocar bandas innecesarias.", max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count' },
-                    { id: "F7", name: "Rueda de Carreta", desc: "Control de dirección tras impacto.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' },
-                    { id: "F8", name: "Objetivo en Rejilla", desc: "Posición precisa en la mesa.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' }
+                    { id: "F1", name: "Tiro de Corte", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive' },
+                    { id: "F2", name: "Tiro de Stop", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive' },
+                    { id: "F3", name: "Tiro Corrido", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive' },
+                    { id: "F4", name: "Tiro de Retroceso", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive' },
+                    { id: "F5", name: "Tiro Seco", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' },
+                    { id: "F6", name: "Embocar Bolas", desc: "10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count' },
+                    { id: "F7", name: "Rueda de Carreta", desc: "20 tiros total.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' },
+                    { id: "F8", name: "Objetivo en Rejilla", desc: "20 tiros total.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' }
                 ]
             },
             II: {
-                id: "II",
-                title: "Examen II - Habilidades",
-                desc: "Situaciones reales de juego por nivel.",
-                levels: ["Bachelors", "Masters", "Doctorate"],
+                id: "II", title: "Examen II - Habilidades", desc: "Situaciones reales por nivel.", levels: ["Bachelors", "Masters", "Doctorate"],
                 drills: [
-                    { 
-                        id: "S1", name: "Línea de Bolas", 
-                        max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, 
-                        total_shots: 2, scoringType: 'best_of', 
-                        desc_es: "Limpiar bolas en rotación. 2 Intentos, cuenta el mejor.", 
-                        pdf_page: {Bachelors: 9, Masters: 23, Doctorate: 37} 
+                    { id: "S1", name: "Línea de Bolas", max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, total_shots: 2, scoringType: 'best_of', pdf_page: {Bachelors: 9, Masters: 23, Doctorate: 37} },
+                    { id: "S2", name: "Corte de Banda", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: 2, scoringType: 'best_of', pdf_page: {Bachelors: 10, Masters: 24, Doctorate: 38} },
+                    { id: "S3", name: "Patrones Bola 9", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', has_variations: true, 
+                      variations: [
+                          { id: "S3-L1", name: "Layout 1", pdf_page: { Bachelors: 11, Masters: 25, Doctorate: 39 }, max_score: 10, total_shots: 1, scoringType: 'count' },
+                          { id: "S3-L2", name: "Layout 2", pdf_page: { Bachelors: 12, Masters: 26, Doctorate: 40 }, max_score: 10, total_shots: 1, scoringType: 'count' },
+                          { id: "S3-L3", name: "Layout 3", pdf_page: { Bachelors: 13, Masters: 27, Doctorate: 41 }, max_score: 10, total_shots: 1, scoringType: 'count' }
+                      ]
                     },
-                    { 
-                        id: "S2", name: "Rail Cut Shot", name_es: "Corte de Banda", 
-                        max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, 
-                        total_shots: 2, scoringType: 'best_of', 
-                        desc_es: "Embocar bolas pegadas a banda. 2 Intentos, cuenta el mejor.", 
-                        pdf_page: {Bachelors: 10, Masters: 24, Doctorate: 38} 
+                    { id: "S4", name: "Patrones Bola 8", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', has_variations: true,
+                      variations: [
+                          { id: "S4-L1", name: "Layout 1", pdf_page: { Bachelors: 14, Masters: 28, Doctorate: 42 }, max_score: 10, total_shots: 1, scoringType: 'count' },
+                          { id: "S4-L2", name: "Layout 2", pdf_page: { Bachelors: 15, Masters: 29, Doctorate: 43 }, max_score: 10, total_shots: 1, scoringType: 'count' },
+                          { id: "S4-L3", name: "Layout 3", pdf_page: { Bachelors: 16, Masters: 30, Doctorate: 44 }, max_score: 10, total_shots: 1, scoringType: 'count' }
+                      ]
                     },
-                    { 
-                        id: "S3", name: "Patrones Bola 9", name_es: "Patrones Bola 9",
-                        desc_es: "3 configuraciones distintas. Selecciona una para practicar.",
-                        has_variations: true,
-                        variations: [
-                            { id: "S3-L1", name: "Layout 1", pdf_page: { Bachelors: 11, Masters: 25, Doctorate: 39 }, max_score: 10, total_shots: 1, scoringType: 'count' },
-                            { id: "S3-L2", name: "Layout 2", pdf_page: { Bachelors: 12, Masters: 26, Doctorate: 40 }, max_score: 10, total_shots: 1, scoringType: 'count' },
-                            { id: "S3-L3", name: "Layout 3", pdf_page: { Bachelors: 13, Masters: 27, Doctorate: 41 }, max_score: 10, total_shots: 1, scoringType: 'count' }
-                        ]
-                    },
-                    { 
-                        id: "S4", name: "Patrones Bola 8", name_es: "Patrones Bola 8",
-                        desc_es: "3 configuraciones distintas (Rayadas + 8).",
-                        has_variations: true,
-                        variations: [
-                            { id: "S4-L1", name: "Layout 1", pdf_page: { Bachelors: 14, Masters: 28, Doctorate: 42 }, max_score: 10, total_shots: 1, scoringType: 'count' },
-                            { id: "S4-L2", name: "Layout 2", pdf_page: { Bachelors: 15, Masters: 29, Doctorate: 43 }, max_score: 10, total_shots: 1, scoringType: 'count' },
-                            { id: "S4-L3", name: "Layout 3", pdf_page: { Bachelors: 16, Masters: 30, Doctorate: 44 }, max_score: 10, total_shots: 1, scoringType: 'count' }
-                        ]
-                    },
-                    { 
-                        id: "S5", name: "Safety Drill", name_es: "Defensas", 
-                        max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, 
-                        total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, 
-                        scoringType: 'count', desc_es: "Esconder CB detrás de obstáculos.", 
-                        pdf_page: {Bachelors: 17, Masters: 31, Doctorate: 45} 
-                    },
-                    { 
-                        id: "S6", name: "Kick Shot", name_es: "Tiro de Retruque", 
-                        max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        scoringType: 'count', desc_es: "Golpear OBs rebotando en banda.", 
-                        pdf_page: {Bachelors: 18, Masters: 32, Doctorate: 46} 
-                    },
-                    { 
-                        id: "S7", name: "Bank Shot", name_es: "Tiro de Banda", 
-                        max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        scoringType: 'count', desc_es: "Embocar OBs rebotando en banda opuesta.", 
-                        pdf_page: {Bachelors: 19, Masters: 33, Doctorate: 47} 
-                    },
-                    { 
-                        id: "S8", name: "Elevated Cue", name_es: "Tiro Elevado", 
-                        max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        scoringType: 'count', desc_es: "Tirar por encima de obstáculos.", 
-                        pdf_page: {Bachelors: 20, Masters: 34, Doctorate: 48} 
-                    },
-                    { 
-                        id: "S9", name: "Jump/Masse", name_es: "Salto o Massé", 
-                        max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, 
-                        scoringType: 'count', desc_es: "Saltar o curvar alrededor de obstáculo.", 
-                        pdf_page: {Bachelors: 21, Masters: 35, Doctorate: 49} 
-                    },
-                    { 
-                        id: "S10", name: "Break Drill", name_es: "Saque", 
-                        max_score: 5, total_shots: 3, scoringType: 'median', 
-                        desc_es: "3 Saques. Se toma la puntuación media.", 
-                        pdf_page: {Bachelors: 22, Masters: 36, Doctorate: 50} 
-                    }
+                    { id: "S5", name: "Defensas", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, scoringType: 'count', pdf_page: {Bachelors: 17, Masters: 31, Doctorate: 45} },
+                    { id: "S6", name: "Tiro de Retruque", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 18, Masters: 32, Doctorate: 46} },
+                    { id: "S7", name: "Tiro de Banda", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 19, Masters: 33, Doctorate: 47} },
+                    { id: "S8", name: "Tiro Elevado", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 20, Masters: 34, Doctorate: 48} },
+                    { id: "S9", name: "Salto o Massé", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 21, Masters: 35, Doctorate: 49} },
+                    { id: "S10", name: "Saque", max_score: 5, total_shots: 3, scoringType: 'median', pdf_page: {Bachelors: 22, Masters: 36, Doctorate: 50} }
                 ]
             },
             III: {
-                id: "III",
-                title: "Examen III - Tiros Avanzados",
-                desc: "25 tiros específicos avanzados.",
-                drills: Array.from({length: 25}, (_, i) => ({
-                    id: `A${i+1}`, 
-                    name: `Tiro A${i+1}`,
-                    desc: "Ver PDF para diagrama específico.",
-                    max_score: 4,
-                    total_shots: 3,
-                    scoringType: 'weighted',
-                    pdf_page: 51 + Math.floor(i/2) 
-                }))
+                id: "III", title: "Examen III - Tiros Avanzados", desc: "25 tiros específicos.",
+                drills: generateExam3Drills()
             },
             IV: {
-                id: "IV",
-                title: "RDS - Sistema de Limpieza",
-                desc: "16 Niveles de limpieza de mesa.",
+                id: "IV", title: "RDS", desc: "16 Niveles.",
                 drills: Array.from({length: 16}, (_, i) => ({
-                    id: `L${i+1}`, 
-                    name: `Nivel ${i+1}`,
-                    desc: i < 5 ? "X bolas, Cualquier Orden." : "Reglas complejas.",
-                    max_score: 100,
-                    total_shots: 1,
-                    scoringType: 'pass_fail',
-                    pdf_page: 65 + Math.floor(i/4)
+                    id: `L${i+1}`, name: `Nivel ${i+1}`, max_score: 100, total_shots: 1, scoringType: 'pass_fail', pdf_page: 65 + Math.floor(i/4)
                 }))
             },
             V: {
-                id: "V",
-                title: "PPC - Desafío de Colocación",
-                desc: "18 Configuraciones consecutivas.",
-                drills: [
-                    { id: "PPC", name: "Desafío Completo", desc: "Jugar las 18 configuraciones.", max_score: 100, total_shots: 18, scoringType: 'deduction', pdf_page: 68}
-                ]
+                id: "V", title: "PPC", desc: "18 Configuraciones.",
+                drills: [{ id: "PPC", name: "Desafío Completo", max_score: 100, total_shots: 18, scoringType: 'deduction', pdf_page: 68 }]
             },
             VI: {
-                id: "VI",
-                title: "Desafío de Seguridad",
-                desc: "20 Tiros defensivos.",
+                id: "VI", title: "Desafío de Seguridad", desc: "20 Tiros.",
                 drills: Array.from({length: 20}, (_, i) => ({
-                    id: `Safe${i+1}`, 
-                    name: `Defensa ${i+1}`,
-                    desc: "Ejecutar tiro defensivo.",
-                    max_score: 1,
-                    total_shots: 1,
-                    scoringType: 'count',
-                    pdf_page: 78 + Math.floor(i/2)
+                    id: `Safe${i+1}`, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count', pdf_page: 78 + Math.floor(i/2)
                 }))
             }
         };
 
-        // --- COMPONENTES DE PUNTUACIÓN ---
+        // --- PUNTUACIÓN (Paneles) ---
         const ScoringPanel = ({ drill, score, onScoreChange, lang, level, onClose, onReset, onNext, isLast }) => {
             const currentScore = Number(score) || 0;
-
-            let totalShots = drill.total_shots;
-            if (typeof totalShots === 'object' && totalShots !== null) {
-                totalShots = totalShots[level] || 10;
-            }
-            
-            let maxScore = drill.max_score;
-            if (typeof maxScore === 'object' && maxScore !== null) {
-                maxScore = maxScore[level] || 10;
-            }
+            let totalShots = (typeof drill.total_shots === 'object' && drill.total_shots !== null) ? (drill.total_shots[level] || 10) : (drill.total_shots || 10);
+            let maxScore = (typeof drill.max_score === 'object' && drill.max_score !== null) ? (drill.max_score[level] || 10) : (drill.max_score || 10);
             
             const [attemptsMade, setAttemptsMade] = useState(0);
-            
-            useEffect(() => {
-                if (currentScore > 0 && attemptsMade === 0) {
-                    // Si hay puntaje al cargar, asumimos que se ha completado parcialmente
-                }
-            }, []);
+            useEffect(() => { if (currentScore > 0 && attemptsMade === 0) { /* Sync if needed */ } }, []);
 
-            const isProgressive = drill.scoringType === 'progressive';
-
-            // --- 1. PROGRESSIVE (F1-F5) ---
-            if (isProgressive) {
+            // Progressive
+            if (drill.scoringType === 'progressive') {
                 const [pos, setPos] = useState(0);
                 const [bonus, setBonus] = useState(0);
-
                 useEffect(() => {
                     if (currentScore > 0) {
                         if (currentScore <= 7) { setPos(currentScore); setBonus(0); }
                         else { setPos(7); setBonus(currentScore - 7); }
-                    } else {
-                        setPos(0); setBonus(0);
-                    }
+                    } else { setPos(0); setBonus(0); }
                 }, [currentScore]);
-
                 const update = (newPos, newBonus) => {
                     let p = Math.max(0, Math.min(7, newPos));
                     let b = Math.max(0, newBonus);
                     if (p < 7) b = 0; 
                     if (p + b > 10) b = 10 - p;
-                    setPos(p);
-                    setBonus(b);
-                    onScoreChange(p + b);
+                    setPos(p); setBonus(b); onScoreChange(p + b);
                 };
-
                 return (
                     <div className="flex flex-col h-full p-6 relative">
-                        <button onClick={onReset} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2">
-                            <RotateCcw size={16} /> Reiniciar
-                        </button>
-                        <div className="mb-6 text-center">
-                            <h3 className="text-xl font-black text-gray-800 uppercase">{drill.name}</h3>
-                            <p className="text-sm text-gray-500">Práctica Progresiva (Max 10)</p>
-                        </div>
+                        <button onClick={onReset} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 p-2"><RotateCcw size={16} /></button>
+                        <h3 className="text-xl font-black text-gray-800 uppercase text-center mb-6">{drill.name}</h3>
                         <div className="flex-grow flex flex-col gap-6 justify-center">
                              <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-sm font-bold text-blue-900 uppercase tracking-wide">Posición Final (1-7)</span>
-                                    <span className="text-4xl font-black text-blue-600">{pos}</span>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => update(pos - 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow border border-blue-200 text-blue-600 hover:bg-blue-50 font-bold text-xl"><Minus /></button>
-                                    <button onClick={() => update(pos + 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow border border-blue-200 text-blue-600 hover:bg-blue-50 font-bold text-xl"><Plus /></button>
-                                </div>
+                                <div className="flex justify-between mb-4"><span className="font-bold text-blue-900">POSICIÓN (1-7)</span><span className="text-4xl font-black text-blue-600">{pos}</span></div>
+                                <div className="flex gap-3"><button onClick={() => update(pos - 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow text-blue-600 text-xl"><Minus /></button><button onClick={() => update(pos + 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow text-blue-600 text-xl"><Plus /></button></div>
                             </div>
                             <div className={`bg-green-50 p-6 rounded-xl border border-green-100 shadow-sm transition-opacity ${pos < 7 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-sm font-bold text-green-900 uppercase tracking-wide">Bono (Max +3)</span>
-                                    <span className="text-4xl font-black text-green-600">{bonus}</span>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => update(pos, bonus - 1)} className="flex-1 py-3 bg-white rounded-lg shadow border border-green-200 text-green-600 hover:bg-green-50 font-bold text-xl"><Minus /></button>
-                                    <button onClick={() => update(pos, bonus + 1)} className="flex-1 py-3 bg-white rounded-lg shadow border border-green-200 text-green-600 hover:bg-green-50 font-bold text-xl" disabled={pos+bonus>=10}><Plus /></button>
-                                </div>
+                                <div className="flex justify-between mb-4"><span className="font-bold text-green-900">BONO (+3)</span><span className="text-4xl font-black text-green-600">{bonus}</span></div>
+                                <div className="flex gap-3"><button onClick={() => update(pos, bonus - 1)} className="flex-1 py-3 bg-white rounded-lg shadow text-green-600 text-xl"><Minus /></button><button onClick={() => update(pos, bonus + 1)} className="flex-1 py-3 bg-white rounded-lg shadow text-green-600 text-xl" disabled={pos+bonus>=10}><Plus /></button></div>
                             </div>
                         </div>
                          <div className="mt-auto pt-6 flex gap-3">
-                            <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-sm hover:bg-gray-50">Cancelar</button>
-                            <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                                {isLast ? "Guardar y Salir" : "Guardar y Siguiente"} { !isLast && <ChevronRight size={18} /> }
-                            </button>
+                            <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm uppercase text-sm">Cancelar</button>
+                            <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm flex justify-center gap-2">{isLast ? "Guardar y Salir" : "Siguiente"} {!isLast && <ChevronRight size={18} />}</button>
                         </div>
                     </div>
                 );
             }
 
-            // --- 2. WEIGHTED SCORING (Exam III) ---
-            if (drill.scoringType === 'weighted') {
-                return (
-                     <div className="flex flex-col h-full p-8 items-center justify-between relative">
-                        <button onClick={onReset} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2">
-                            <RotateCcw size={16} /> Reiniciar
-                        </button>
-                        <div className="text-center w-full mt-4">
-                            <h2 className="text-lg font-bold text-gray-900 mb-2">{drill.id} - {drill.name}</h2>
-                             <p className="text-sm text-gray-500 mb-8">Selecciona el resultado de tu intento</p>
-                             <div className="text-6xl font-black text-indigo-600 mb-12">{currentScore} <span className="text-2xl font-medium text-gray-400">pts</span></div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-8">
-                            <button onClick={() => onScoreChange(4)} className={`py-4 rounded-xl font-bold text-lg border-2 transition ${currentScore === 4 ? 'bg-green-100 border-green-500 text-green-800 ring-2 ring-green-300' : 'bg-white border-gray-200 text-gray-600'}`}>1ª (4pts)</button>
-                            <button onClick={() => onScoreChange(2)} className={`py-4 rounded-xl font-bold text-lg border-2 transition ${currentScore === 2 ? 'bg-blue-100 border-blue-500 text-blue-800 ring-2 ring-blue-300' : 'bg-white border-gray-200 text-gray-600'}`}>2ª (2pts)</button>
-                            <button onClick={() => onScoreChange(1)} className={`py-4 rounded-xl font-bold text-lg border-2 transition ${currentScore === 1 ? 'bg-yellow-100 border-yellow-500 text-yellow-800 ring-2 ring-yellow-300' : 'bg-white border-gray-200 text-gray-600'}`}>3ª (1pt)</button>
-                            <button onClick={() => onScoreChange(0)} className={`py-4 rounded-xl font-bold text-lg border-2 transition ${currentScore === 0 ? 'bg-red-100 border-red-500 text-red-800 ring-2 ring-red-300' : 'bg-white border-gray-200 text-gray-600'}`}>Fallo (0)</button>
-                        </div>
-
-                        <div className="w-full flex gap-3">
-                             <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-sm hover:bg-gray-50">Cancelar</button>
-                             <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                                {isLast ? "Guardar y Salir" : "Guardar y Siguiente"} { !isLast && <ChevronRight size={18} /> }
-                            </button>
-                        </div>
-                     </div>
-                );
-            }
-            
-            // --- 3. DEDUCTION SCORING (PPC) ---
-            if (drill.scoringType === 'deduction') {
-                const errors = 100 - currentScore;
-                const updateErrors = (val) => {
-                    const e = Math.max(0, val);
-                    onScoreChange(100 - e);
-                };
-                 return (
-                     <div className="flex flex-col h-full p-8 items-center justify-between relative">
-                        <button onClick={onReset} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2">
-                            <RotateCcw size={16} /> Reiniciar
-                        </button>
-                        <div className="text-center w-full mt-4">
-                            <h2 className="text-lg font-bold text-gray-900 mb-2">{drill.id} - {drill.name}</h2>
-                             <p className="text-sm text-gray-500 mb-8">Puntuación Inversa (Empiezas con 100)</p>
-                             <div className="text-6xl font-black text-gray-800 mb-2">{currentScore}</div>
-                             <p className="text-gray-400 font-bold uppercase tracking-widest mb-12">Puntos Restantes</p>
-                        </div>
-                        
-                         <div className="w-full max-w-md bg-red-50 p-6 rounded-2xl border border-red-100 mb-8">
-                             <div className="flex justify-between items-center">
-                                 <span className="font-bold text-red-900 text-lg uppercase">Errores / Faltas</span>
-                                 <div className="flex items-center gap-4">
-                                      <button onClick={() => updateErrors(errors - 1)} className="w-12 h-12 rounded-full bg-white text-red-600 shadow font-bold text-2xl flex items-center justify-center hover:bg-red-50 transition"><Minus /></button>
-                                      <span className="text-4xl font-black text-red-600 w-16 text-center">{errors === 100 && currentScore === 0 ? 0 : errors}</span>
-                                      <button onClick={() => updateErrors(errors + 1)} className="w-12 h-12 rounded-full bg-white text-red-600 shadow font-bold text-2xl flex items-center justify-center hover:bg-red-50 transition"><Plus /></button>
-                                 </div>
-                             </div>
-                         </div>
-
-                        <div className="w-full flex gap-3">
-                             <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-sm hover:bg-gray-50">Cancelar</button>
-                             <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                                {isLast ? "Guardar y Salir" : "Guardar y Siguiente"} { !isLast && <ChevronRight size={18} /> }
-                            </button>
-                        </div>
-                     </div>
-                 );
-            }
-
-            // --- 4. STANDARD COUNT (Hit/Miss) ---
-            const handleHit = () => {
-                if (attemptsMade < totalShots) {
-                    onScoreChange(Math.min(maxScore, currentScore + 1));
-                    setAttemptsMade(prev => prev + 1);
-                }
-            };
-
-            const handleMiss = () => {
-                if (attemptsMade < totalShots) {
-                    setAttemptsMade(prev => prev + 1);
-                }
-            };
-            
-            useEffect(() => {
-                if (currentScore > 0 && attemptsMade === 0) {
-                    setAttemptsMade(currentScore); 
-                }
-            }, []);
-
-            const handleLocalReset = () => {
-                onReset();
-                setAttemptsMade(0);
-            }
+            // Standard Count
+            const handleHit = () => { if (attemptsMade < totalShots) { onScoreChange(Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
+            const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
+            useEffect(() => { if (currentScore > 0 && attemptsMade === 0) setAttemptsMade(currentScore); }, []);
+            const handleLocalReset = () => { onReset(); setAttemptsMade(0); }
 
             return (
                 <div className="flex flex-col h-full p-8 items-center justify-between relative">
-                    <button onClick={handleLocalReset} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2 hover:bg-gray-100 rounded-lg">
-                        <RotateCcw size={16} /> Reiniciar
-                    </button>
-
+                    <button onClick={handleLocalReset} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2 hover:bg-gray-100 rounded-lg"><RotateCcw size={16} /> Reiniciar</button>
                     <div className="text-center w-full mt-8">
-                        <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">
-                            {drill.id} - {drill.name}
-                        </div>
-                        
-                        <div className="text-6xl font-black text-gray-900 mb-2 tracking-tighter leading-none">
-                            {currentScore} <span className="text-4xl text-gray-300 font-medium">/ {totalShots}</span>
-                        </div>
-                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">
-                            Aciertos / Intentos Totales
-                        </div>
-                        
-                        {/* Barra de progreso de intentos */}
-                        <div className="w-full max-w-md mx-auto h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
-                             <div className="h-full bg-blue-500 transition-all duration-300" style={{width: `${(attemptsMade / totalShots) * 100}%`}}></div>
-                        </div>
-                        <div className="text-xs text-gray-400 font-medium">
-                            Tiro {Math.min(attemptsMade + 1, totalShots)} de {totalShots}
-                        </div>
+                        <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">{drill.id}</div>
+                        <div className="text-6xl font-black text-gray-900 mb-2 tracking-tighter leading-none">{currentScore} <span className="text-4xl text-gray-300 font-medium">/ {totalShots}</span></div>
+                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">Aciertos / Intentos</div>
+                        <div className="w-full max-w-md mx-auto h-2 bg-gray-100 rounded-full overflow-hidden mb-2"><div className="h-full bg-blue-500 transition-all duration-300" style={{width: `${(attemptsMade / totalShots) * 100}%`}}></div></div>
+                        <div className="text-xs text-gray-400 font-medium">Tiro {Math.min(attemptsMade + 1, totalShots)} de {totalShots}</div>
                     </div>
-
                     <div className="flex gap-6 w-full max-w-md mb-8">
-                        <button 
-                            onClick={handleMiss}
-                            disabled={attemptsMade >= totalShots}
-                            className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-black text-2xl py-8 rounded-2xl shadow-xl shadow-red-100 transform transition active:scale-95 flex flex-col items-center justify-center gap-2"
-                        >
-                            <X size={32} strokeWidth={4} />
-                            <span className="text-xs uppercase tracking-widest font-bold opacity-80">Fallo</span>
-                        </button>
-                        <button 
-                            onClick={handleHit}
-                            disabled={attemptsMade >= totalShots}
-                            className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-black text-2xl py-8 rounded-2xl shadow-xl shadow-green-100 transform transition active:scale-95 flex flex-col items-center justify-center gap-2"
-                        >
-                            <Check size={32} strokeWidth={4} />
-                            <span className="text-xs uppercase tracking-widest font-bold opacity-80">Acierto</span>
-                        </button>
+                        <button onClick={handleMiss} disabled={attemptsMade >= totalShots} className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-2xl py-8 rounded-2xl shadow-xl transform transition active:scale-95 flex flex-col items-center justify-center gap-2"><X size={32} strokeWidth={4} /><span className="text-xs uppercase font-bold opacity-80">Fallo</span></button>
+                        <button onClick={handleHit} disabled={attemptsMade >= totalShots} className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black text-2xl py-8 rounded-2xl shadow-xl transform transition active:scale-95 flex flex-col items-center justify-center gap-2"><Check size={32} strokeWidth={4} /><span className="text-xs uppercase font-bold opacity-80">Acierto</span></button>
                     </div>
-
                     <div className="w-full flex gap-3">
-                         <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-sm hover:bg-gray-50">Cancelar</button>
-                         <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                            {isLast ? "Guardar y Salir" : "Guardar y Siguiente"} { !isLast && <ChevronRight size={18} /> }
-                        </button>
+                         <button onClick={onClose} className="flex-1 bg-white border border-gray-300 text-gray-600 font-bold py-4 rounded-xl shadow-sm uppercase text-sm">Cancelar</button>
+                         <button onClick={onNext} className="flex-[2] bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm flex justify-center gap-2">{isLast ? "Guardar y Salir" : "Siguiente"} {!isLast && <ChevronRight size={18} />}</button>
                     </div>
                 </div>
             );
         };
 
-        const PracticeModal = ({ drill, score, onScoreChange, onClose, onNextDrill, isLastDrill, level }) => {
-            // Resolver página PDF correcta según nivel o por defecto
+        // Mini Panel para Examen III
+        const MiniScoringPanel = ({ drill, examId, updateScore, allExamScores }) => {
+            const currentScore = allExamScores[drill.id] || 0;
+            const totalShots = drill.total_shots || 10;
+            const maxScore = drill.max_score || 10;
+            const [attemptsMade, setAttemptsMade] = useState(0);
+            useEffect(() => { if (currentScore > 0) setAttemptsMade(Math.max(currentScore, attemptsMade)); }, [currentScore]);
+
+            const handleHit = () => { if (attemptsMade < totalShots) { updateScore(examId, drill.id, Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
+            const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
+            const handleReset = () => { updateScore(examId, drill.id, 0); setAttemptsMade(0); };
+
+            return (
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                        <div><h4 className="font-bold text-gray-800">{drill.name}</h4><span className="text-xs text-gray-400 font-bold uppercase">{currentScore} Aciertos / {attemptsMade} Intentos</span></div>
+                        <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
+                    </div>
+                    <div className="flex gap-3 mb-2">
+                        <button onClick={handleMiss} disabled={attemptsMade >= totalShots} className="flex-1 bg-red-100 text-red-600 border border-red-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-red-200 active:scale-95 disabled:opacity-50">Fallo</button>
+                        <button onClick={handleHit} disabled={attemptsMade >= totalShots} className="flex-1 bg-green-100 text-green-600 border border-green-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-green-200 active:scale-95 disabled:opacity-50">Acierto</button>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden"><div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{width: `${(attemptsMade / totalShots) * 100}%`}}></div></div>
+                </div>
+            );
+        };
+        
+        const PracticeModalFinal = ({ drill, score, onScoreChange, onClose, onNextDrill, isLastDrill, level, examId, updateScore, allExamScores }) => {
             let pdfPage = drill.pdf_page;
-            if (typeof pdfPage === 'object' && pdfPage !== null) {
-                pdfPage = pdfPage[level] || pdfPage['Bachelors']; 
-            }
+            if (typeof pdfPage === 'object' && pdfPage !== null) { pdfPage = pdfPage[level] || pdfPage['Bachelors']; }
+            const isMultiDrill = drill.isGroup && drill.subDrills;
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
                     <div className="bg-white w-full max-w-7xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in-zoom border border-gray-200">
                         <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
-
-                        {/* IZQUIERDA: VISOR PDF */}
                         <div className="w-full md:w-7/12 bg-gray-100 border-r border-gray-200 relative flex flex-col">
-                             <iframe 
-                                src={getPdfViewerUrl(pdfPage)}
-                                className="w-full h-full border-none bg-gray-50"
-                                title="Diagrama del Ejercicio"
-                            ></iframe>
+                             <iframe src={getPdfViewerUrl(pdfPage)} className="w-full h-full border-none bg-gray-50" title="Diagrama"></iframe>
                         </div>
-
-                        {/* DERECHA: PUNTUACIÓN */}
-                        <div className="w-full md:w-5/12 bg-white flex flex-col relative z-20">
-                             <div className="absolute top-4 right-4 hidden md:block">
-                                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition"><X size={24} /></button>
-                             </div>
-                            <ScoringPanel 
-                                drill={drill} 
-                                score={score} 
-                                onScoreChange={onScoreChange}
-                                onReset={() => onScoreChange(0)}
-                                onNext={onNextDrill}
-                                isLast={isLastDrill}
-                                level={level}
-                                onClose={onClose}
-                            />
+                        <div className="w-full md:w-5/12 bg-white flex flex-col relative z-20 overflow-y-auto">
+                             <div className="absolute top-4 right-4 hidden md:block"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition"><X size={24} /></button></div>
+                            {isMultiDrill ? (
+                                <div className="p-8 flex flex-col h-full">
+                                    <div className="mb-6 text-center"><h2 className="text-2xl font-black text-gray-900 mb-1">{drill.name}</h2><p className="text-sm text-gray-500">Completa los ejercicios de esta página</p></div>
+                                    <div className="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                                        {drill.subDrills.map(subDrill => (
+                                            <MiniScoringPanel key={subDrill.id} drill={subDrill} examId={examId} updateScore={updateScore} allExamScores={allExamScores} />
+                                        ))}
+                                    </div>
+                                    <button onClick={onNextDrill} className="w-full mt-auto bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm flex justify-center gap-2">{isLastDrill ? "Guardar y Salir" : "Siguiente Página"} {!isLastDrill && <ChevronRight size={18} />}</button>
+                                </div>
+                            ) : (
+                                <ScoringPanel drill={drill} score={score} onScoreChange={onScoreChange} onReset={() => onScoreChange(0)} onNext={onNextDrill} isLast={isLastDrill} level={level} onClose={onClose} />
+                            )}
                         </div>
                     </div>
                 </div>
             );
         };
-        
-        // --- COMPONENTES UI ADICIONALES (Variations Selector) ---
-        
-        const VariationsModal = ({ drill, onClose, onSelectVariation }) => (
-             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
-                <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 relative animate-in-zoom">
-                     <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800"><X size={24} /></button>
-                     <h3 className="text-xl font-black text-gray-900 mb-4 text-center">{drill.name}</h3>
-                     <p className="text-gray-500 text-center mb-6 text-sm">{drill.desc_es}</p>
-                     <div className="flex flex-col gap-3">
-                         {drill.variations.map(v => (
-                             <button 
-                                key={v.id} 
-                                onClick={() => onSelectVariation(v)}
-                                className="p-4 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl text-left transition group"
-                             >
-                                 <span className="font-bold text-gray-800 group-hover:text-blue-700 block">{v.name}</span>
-                                 <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">ID: {v.id}</span>
-                             </button>
-                         ))}
-                     </div>
+
+        // --- RESTO DE LA APP ---
+        const LoginScreen = ({ onLogin }) => {
+            const [username, setUsername] = useState("");
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+                    <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><Target className="text-white w-8 h-8" /></div>
+                        <h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1>
+                        <p className="text-gray-500 mb-6">Ingresa tu nombre para guardar tu progreso</p>
+                        <form onSubmit={(e) => { e.preventDefault(); if(username.trim()) onLogin(username.trim()); }}>
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus />
+                            <button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Comenzar Entrenamiento</button>
+                        </form>
+                    </div>
                 </div>
-             </div>
-        );
+            );
+        };
 
         const ExamCard = ({ exam, onSelect }) => (
             <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden">
@@ -569,288 +345,67 @@
                     <h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2>
                 </div>
                 <p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p>
-                <div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">
-                    Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" />
-                </div>
+                <div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" /></div>
             </div>
         );
 
         const ExamDetail = ({ exam, onBack, user, scores, updateScore, resetExamScore }) => {
             const [activeDrill, setActiveDrill] = useState(null);
-            // Para manejar la selección de variaciones
-            const [selectedVariationDrill, setSelectedVariationDrill] = useState(null);
-            
             const [level, setLevel] = useState("Bachelors");
-
-            const currentDrills = useMemo(() => {
-                if (exam.id !== 'II') return exam.drills;
-                return exam.drills; 
-            }, [exam, level]);
-            
-            // Función para abrir el modal correcto
-            const handleDrillClick = (drill) => {
-                if (drill.has_variations) {
-                    setSelectedVariationDrill(drill);
-                } else {
-                    setActiveDrill(drill);
-                }
-            };
-
-            const handleResetExam = () => {
-                if(confirm("¿Estás seguro de querer reiniciar todas las puntuaciones de este examen?")) {
-                    resetExamScore(exam.id);
-                }
-            };
+            const currentDrills = useMemo(() => (exam.id !== 'II' ? exam.drills : exam.drills), [exam, level]);
+            const handleResetExam = () => { if(confirm("¿Estás seguro de reiniciar este examen?")) resetExamScore(exam.id); };
             
             const handleNextDrill = () => {
                 if (!activeDrill) return;
-                
-                // Lógica compleja si estamos en una variación... por simplicidad, si es variación cerramos
-                // Si es drill normal, avanzamos
-                
                 const currentIndex = currentDrills.findIndex(d => d.id === activeDrill.id);
-                if (currentIndex >= 0 && currentIndex < currentDrills.length - 1) {
-                     const nextDrill = currentDrills[currentIndex + 1];
-                     if (nextDrill.has_variations) {
-                         setActiveDrill(null);
-                         setSelectedVariationDrill(nextDrill);
-                     } else {
-                         setActiveDrill(nextDrill);
-                     }
-                } else {
-                    setActiveDrill(null);
-                }
+                if (currentIndex >= 0 && currentIndex < currentDrills.length - 1) setActiveDrill(currentDrills[currentIndex + 1]);
+                else setActiveDrill(null);
             };
-            
             const isLastDrill = activeDrill ? currentDrills.findIndex(d => d.id === activeDrill.id) === currentDrills.length - 1 : false;
 
             return (
                 <div className="max-w-6xl mx-auto p-6 pb-24">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-                        <div className="flex items-center gap-4">
-                            <button onClick={onBack} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition shadow-sm"><ChevronLeft size={24} /></button>
-                            <div>
-                                <h2 className="text-3xl font-black text-gray-900">{exam.title}</h2>
-                                <p className="text-gray-500">{exam.desc}</p>
-                            </div>
-                        </div>
+                        <div className="flex items-center gap-4"><button onClick={onBack} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 shadow-sm"><ChevronLeft size={24} /></button><div><h2 className="text-3xl font-black text-gray-900">{exam.title}</h2><p className="text-gray-500">{exam.desc}</p></div></div>
                         <div className="flex items-center gap-3">
-                            <button onClick={handleResetExam} className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-bold text-sm transition border border-transparent hover:border-red-100">
-                                <RotateCcw size={16} /> Reiniciar Nivel
-                            </button>
-                            {exam.id === 'II' && (
-                                <div className="flex bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm self-start md:self-auto">
-                                    {['Bachelors', 'Masters', 'Doctorate'].map(l => (
-                                        <button key={l} onClick={() => setLevel(l)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${level === l ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
-                                            {l === 'Bachelors' ? 'Licenciatura' : l === 'Masters' ? 'Maestría' : 'Doctorado'}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            <button onClick={handleResetExam} className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-bold text-sm transition border border-transparent hover:border-red-100"><RotateCcw size={16} /> Reiniciar Nivel</button>
+                            {exam.id === 'II' && <div className="flex bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">{['Bachelors', 'Masters', 'Doctorate'].map(l => <button key={l} onClick={() => setLevel(l)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${level === l ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}>{l === 'Bachelors' ? 'Licenciatura' : l === 'Masters' ? 'Maestría' : 'Doctorado'}</button>)}</div>}
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {currentDrills.map((drill) => {
-                            // Calcular puntaje total si es compuesto (variaciones)
                             let currentScore = 0;
-                            let maxDisplay = 10;
-                            
-                            if (drill.has_variations) {
-                                // Sumar todas las variaciones
-                                drill.variations.forEach(v => {
-                                     currentScore += (scores[exam.id] ? (scores[exam.id][v.id] || 0) : 0);
-                                });
-                                maxDisplay = drill.variations.length * 10; // Aprox
+                            let maxDisplay = 0;
+                            if (drill.isGroup) {
+                                drill.subDrills.forEach(sd => { currentScore += (scores[exam.id] ? (scores[exam.id][sd.id] || 0) : 0); maxDisplay += sd.max_score; });
                             } else {
                                 currentScore = scores[exam.id] ? (scores[exam.id][drill.id] || 0) : 0;
-                                maxDisplay = drill.max_score;
-                                if(typeof maxDisplay === 'object') maxDisplay = maxDisplay[level] || 10;
+                                maxDisplay = (typeof drill.max_score === 'object' ? drill.max_score[level] : drill.max_score) || 10;
                             }
-
                             return (
-                                <div key={drill.id} onClick={() => handleDrillClick(drill)} className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group relative overflow-hidden">
+                                <div key={drill.id} onClick={() => setActiveDrill(drill)} className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group relative overflow-hidden">
                                     <div className="flex justify-between items-start mb-4 relative z-10">
-                                        <div className="bg-gray-100 text-gray-600 font-bold w-12 h-12 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 transition-colors text-lg">{drill.id}</div>
+                                        <div className="bg-gray-100 text-gray-600 font-bold w-12 h-12 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 text-lg">{drill.id.split('-')[0]}</div>
                                         {currentScore > 0 && <CheckCircle className="text-green-500" size={24} />}
-                                        {drill.has_variations && <div className="bg-blue-50 text-blue-600 text-xs font-bold px-2 py-1 rounded-md border border-blue-100">Multi</div>}
+                                        {drill.isGroup && <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Multi</span>}
                                     </div>
                                     <h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-green-700 transition-colors relative z-10">{drill.name}</h3>
-                                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 relative z-10">{drill.desc || drill.desc_es}</p>
-                                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                                        <div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(currentScore / maxDisplay) * 100}%` }}></div>
-                                    </div>
+                                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 relative z-10">{drill.desc}</p>
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden"><div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(currentScore / maxDisplay) * 100}%` }}></div></div>
                                 </div>
                             );
                         })}
                     </div>
-
-                    {selectedVariationDrill && (
-                        <VariationsModal 
-                            drill={selectedVariationDrill}
-                            onClose={() => setSelectedVariationDrill(null)}
-                            onSelectVariation={(v) => { setSelectedVariationDrill(null); setActiveDrill(v); }}
-                        />
-                    )}
-
-                    {activeDrill && (
-                        <PracticeModal 
-                            drill={activeDrill}
-                            score={scores[exam.id] ? (scores[exam.id][activeDrill.id] || 0) : 0}
-                            onScoreChange={(val) => updateScore(exam.id, activeDrill.id, val)}
-                            onClose={() => setActiveDrill(null)}
-                            onNextDrill={handleNextDrill}
-                            isLastDrill={isLastDrill}
-                            level={level}
-                        />
-                    )}
-                </div>
-            );
-        };
-
-        const LoginScreen = ({ onLogin }) => {
-            const [username, setUsername] = useState("");
-            const [usersList, setUsersList] = useState(() => {
-                 const saved = localStorage.getItem('bu_users_list');
-                 return saved ? JSON.parse(saved) : [];
-            });
-            const [isCreating, setIsCreating] = useState(usersList.length === 0);
-
-            const handleCreate = (e) => {
-                e.preventDefault();
-                if(!username.trim()) return;
-                const name = username.trim();
-                if (!usersList.includes(name)) {
-                    const newList = [...usersList, name];
-                    setUsersList(newList);
-                    localStorage.setItem('bu_users_list', JSON.stringify(newList));
-                }
-                onLogin(name);
-            };
-
-            const handleDelete = (name) => {
-                if(confirm(`¿Borrar a ${name}?`)) {
-                    const newList = usersList.filter(u => u !== name);
-                    setUsersList(newList);
-                    localStorage.setItem('bu_users_list', JSON.stringify(newList));
-                    localStorage.removeItem(`bu_scores_${name}`);
-                    if(usersList.length === 1) setIsCreating(true);
-                }
-            };
-
-            if (isCreating) {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-                        <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center relative">
-                            {usersList.length > 0 && <button onClick={() => setIsCreating(false)} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600"><ChevronLeft size={24} /></button>}
-                            <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><User size={32} className="text-white" /></div>
-                            <h1 className="text-2xl font-extrabold text-gray-800 mb-2">Nuevo Jugador</h1>
-                            <p className="text-gray-500 mb-6">Crea tu perfil para comenzar</p>
-                            <form onSubmit={handleCreate}>
-                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus />
-                                <button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Crear Perfil</button>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-                    <div className="max-w-4xl w-full">
-                        <div className="text-center mb-8">
-                             <div className="inline-flex items-center justify-center p-3 bg-white rounded-full shadow-sm mb-4"><Target className="text-green-600 w-10 h-10" /></div>
-                             <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">TIRO MAESTRO</h1>
-                             <p className="text-gray-500 text-lg">Selecciona tu perfil</p>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                            {usersList.map(u => (
-                                <div key={u} onClick={() => onLogin(u)} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition flex items-center justify-between group cursor-pointer">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">{u.charAt(0).toUpperCase()}</div>
-                                        <span className="font-bold text-gray-800 text-lg">{u}</span>
-                                    </div>
-                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(u); }} className="p-2 text-gray-300 hover:text-red-500 rounded-full transition opacity-0 group-hover:opacity-100"><Trash2 size={18}/></button>
-                                </div>
-                            ))}
-                             <button onClick={() => setIsCreating(true)} className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300 hover:border-green-400 hover:bg-green-50 transition flex items-center justify-center gap-2 text-gray-500 hover:text-green-600 group">
-                                <Plus size={24} className="group-hover:scale-110 transition-transform" /><span className="font-bold">Crear Nuevo</span>
-                            </button>
-                        </div>
-                    </div>
+                    {activeDrill && <PracticeModalFinal drill={activeDrill} score={scores[exam.id] ? (scores[exam.id][activeDrill.id] || 0) : 0} onScoreChange={(val) => updateScore(exam.id, activeDrill.id, val)} onClose={() => setActiveDrill(null)} onNextDrill={handleNextDrill} isLastDrill={isLastDrill} level={level} examId={exam.id} updateScore={updateScore} allExamScores={scores[exam.id] || {}} />}
                 </div>
             );
         };
 
         const UserProfile = ({ user, scores, goBack }) => {
-            const totalScore = useMemo(() => {
-                let sum = 0;
-                Object.keys(examsData).forEach(examKey => {
-                    const examScores = scores[examKey] || {};
-                    Object.values(examScores).forEach(val => sum += Number(val) || 0);
-                });
-                return sum;
-            }, [scores]);
+            const totalScore = useMemo(() => { let sum = 0; Object.keys(examsData).forEach(k => { const s = scores[k] || {}; Object.values(s).forEach(v => sum += Number(v) || 0); }); return sum; }, [scores]);
             const currentLevel = [...LEVELS].reverse().find(l => totalScore >= l.min) || LEVELS[0];
             return (
-                <div className="max-w-4xl mx-auto p-4">
-                    <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6"><ChevronLeft size={20} /> Volver</button>
-                    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 p-6">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl font-bold">{user.charAt(0).toUpperCase()}</div>
-                            <div><h2 className="text-2xl font-bold">{user}</h2><p className="text-gray-500">Puntos Totales: <span className="font-bold text-gray-900">{totalScore}</span></p></div>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
-                            <span className="text-sm font-bold text-gray-400 uppercase">Nivel Actual</span>
-                            <h3 className={`text-3xl font-black ${currentLevel.color}`}>{currentLevel.name_es}</h3>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const Header = ({ goHome, onProfileClick, user, onLogout, resetData }) => (
-            <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800">
-                <div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}>
-                    <div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200">
-                        <Target className="text-white w-7 h-7" />
-                    </div>
-                    <div className="hidden sm:block">
-                        <h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p>
-                    </div>
-                </div>
-                <div className="flex gap-3 items-center">
-                    {user && (
-                        <React.Fragment>
-                            <button onClick={resetData} className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition" title="Reiniciar Todo"><Trash2 size={20} /></button>
-                            <button onClick={onProfileClick} className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white pl-2 pr-4 py-1.5 rounded-full transition text-sm border border-gray-700 shadow-sm group">
-                                <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold group-hover:bg-indigo-400 transition-colors">{user.charAt(0).toUpperCase()}</div>
-                                <span className="font-medium hidden sm:inline">{user}</span>
-                            </button>
-                            <button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition"><LogOut size={20} /></button>
-                        </React.Fragment>
-                    )}
-                </div>
-            </header>
-        );
-
-        const Glossary = ({ goBack }) => {
-            const [search, setSearch] = useState("");
-            return (
-                <div className="max-w-3xl mx-auto p-4">
-                    <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6"><ChevronLeft size={20} /> Volver</button>
-                    <h2 className="text-3xl font-bold mb-6 text-gray-900 flex items-center gap-3"><BookOpen className="text-blue-600"/> Glosario de Billar</h2>
-                    <input type="text" placeholder="Buscar términos..." className="w-full p-4 pl-12 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value={search} onChange={(e) => setSearch(e.target.value)} />
-                    <div className="grid gap-4 mt-6">
-                        {glossaryTerms.filter(t => t.term.toLowerCase().includes(search.toLowerCase()) || t.def_es.toLowerCase().includes(search.toLowerCase())).map((t, i) => (
-                            <div key={i} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                                <h3 className="font-bold text-xl text-blue-900 mb-2">{t.term}</h3>
-                                <p className="text-gray-600 text-sm">{t.def_es}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <div className="max-w-4xl mx-auto p-4"><button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6"><ChevronLeft size={20} /> Volver</button><div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6"><div className="flex items-center gap-4 mb-6"><div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl font-bold">{user.charAt(0).toUpperCase()}</div><div><h2 className="text-2xl font-bold">{user}</h2><p className="text-gray-500">Puntos Totales: <span className="font-bold text-gray-900">{totalScore}</span></p></div></div><div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center"><span className="text-sm font-bold text-gray-400 uppercase">Nivel Actual</span><h3 className={`text-3xl font-black ${currentLevel.color}`}>{currentLevel.name_es}</h3></div></div></div>
             );
         };
 
@@ -859,92 +414,21 @@
             const [view, setView] = useState(user ? 'home' : 'login'); 
             const [selectedExam, setSelectedExam] = useState(null);
             const [allScores, setAllScores] = useState({});
-
-            useEffect(() => {
-                if (user) {
-                    const saved = localStorage.getItem(`bu_scores_${user}`);
-                    setAllScores(saved ? JSON.parse(saved) : {});
-                    setView('home');
-                } else { setView('login'); }
-            }, [user]);
-
-            const handleLogin = (username) => {
-                localStorage.setItem('bu_current_user', username);
-                setUser(username);
-            };
-
-            const handleLogout = () => {
-                localStorage.removeItem('bu_current_user');
-                setUser(null);
-                setAllScores({});
-                setView('login');
-            };
-
-            const updateScore = (examId, drillId, val) => {
-                const newScores = { ...allScores, [examId]: { ...(allScores[examId] || {}), [drillId]: val } };
-                setAllScores(newScores);
-                localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores));
-            };
-
-            // REINICIAR EXAMEN
-            const resetExamScore = (examId) => {
-                const newScores = { ...allScores };
-                delete newScores[examId];
-                setAllScores(newScores);
-                localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores));
-            };
-
-            // REINICIAR TODO EL USUARIO
-            const resetAllData = () => {
-                if(confirm("¿Estás seguro de querer borrar TODO tu progreso?")) {
-                    setAllScores({});
-                    localStorage.removeItem(`bu_scores_${user}`);
-                }
-            };
-
+            useEffect(() => { if (user) { const saved = localStorage.getItem(`bu_scores_${user}`); setAllScores(saved ? JSON.parse(saved) : {}); setView('home'); } else { setView('login'); } }, [user]);
+            const handleLogin = (u) => { localStorage.setItem('bu_current_user', u); setUser(u); };
+            const handleLogout = () => { localStorage.removeItem('bu_current_user'); setUser(null); setAllScores({}); setView('login'); };
+            const updateScore = (eId, dId, val) => { const ns = { ...allScores, [eId]: { ...(allScores[eId] || {}), [dId]: val } }; setAllScores(ns); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(ns)); };
+            const resetExamScore = (eId) => { const ns = { ...allScores }; delete ns[eId]; setAllScores(ns); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(ns)); };
             if (!user) return <LoginScreen onLogin={handleLogin} />;
-
             return (
                 <div className="min-h-screen flex flex-col bg-gray-100 font-sans text-gray-900">
-                    <Header goHome={() => {setSelectedExam(null); setView('home');}} onProfileClick={() => setView('profile')} user={user} onLogout={handleLogout} resetData={resetAllData} />
-                    
+                    <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800"><div className="flex items-center gap-3 cursor-pointer group" onClick={() => {setSelectedExam(null); setView('home');}}><div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200"><Target className="text-white w-7 h-7" /></div><div className="hidden sm:block"><h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1><p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p></div></div><div className="flex gap-3 items-center">{user && <React.Fragment><button onClick={() => setView('profile')} className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white pl-2 pr-4 py-1.5 rounded-full transition text-sm border border-gray-700 shadow-sm group"><div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold group-hover:bg-indigo-400 transition-colors">{user.charAt(0).toUpperCase()}</div><span className="font-medium hidden sm:inline">{user}</span></button><button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition"><LogOut size={20} /></button></React.Fragment>}</div></header>
                     <main className="flex-grow">
-                        {view === 'home' && (
-                            <div className="max-w-5xl mx-auto p-6">
-                                <div className="text-center mb-12 mt-8">
-                                    <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">TIRO MAESTRO</h1>
-                                    <p className="text-xl text-gray-500 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p>
-                                </div>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-                                    {Object.values(examsData).map(exam => (
-                                        <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />
-                                    ))}
-                                </div>
-                                <div className="flex justify-center">
-                                    <button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-600 hover:text-blue-600 font-bold transition px-8 py-4 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md">
-                                        <BookOpen size={24} className="text-blue-500" /> Acceder al Glosario
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
+                        {view === 'home' && <div className="max-w-5xl mx-auto p-6"><div className="text-center mb-12 mt-8"><h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">TIRO MAESTRO</h1><p className="text-xl text-gray-500 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p></div><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">{Object.values(examsData).map(exam => <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />)}</div></div>}
                         {view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} />}
                         {view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); }} user={user} scores={allScores} updateScore={updateScore} resetExamScore={resetExamScore} />}
-                        {view === 'glossary' && <Glossary goBack={() => setView('home')} />}
                     </main>
-                    
-                    <footer className="bg-white border-t border-gray-200 p-8 text-center">
-                        <div className="max-w-2xl mx-auto">
-                            <div className="flex justify-center items-center gap-2 mb-4 text-gray-400"><GraduationCap size={24} /></div>
-                            <p className="text-sm text-gray-500 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p>
-                            <p className="text-xs text-gray-400 leading-relaxed">
-                                Basado en el currículo del <strong className="text-gray-600">Dr. Dave Alciatore</strong>.
-                                <br/>
-                                Desarrollado por <strong className="text-gray-600">Juan Miguel Rios Redondo</strong>.
-                            </p>
-                            <a href="https://billiarduniversity.org/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold mt-3 text-sm hover:underline">billiarduniversity.org <ExternalLink size={12} /></a>
-                        </div>
-                    </footer>
+                    <footer className="bg-white border-t border-gray-200 p-8 text-center"><div className="max-w-2xl mx-auto"><div className="flex justify-center items-center gap-2 mb-4 text-gray-400"><GraduationCap size={24} /></div><p className="text-sm text-gray-500 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p><p className="text-xs text-gray-400 leading-relaxed">Basado en el currículo del <strong className="text-gray-600">Dr. Dave Alciatore</strong>.<br/>Desarrollado por <strong className="text-gray-600">Juan Miguel Rios Redondo</strong>.</p><a href="https://billiarduniversity.org/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold mt-3 text-sm hover:underline">billiarduniversity.org <ExternalLink size={12} /></a></div></footer>
                 </div>
             );
         };
