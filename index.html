@@ -77,30 +77,9 @@
             { name_es: "Leyenda", min: 350, color: "text-yellow-600", bg: "bg-yellow-100" }
         ];
 
-        // --- DESCRIPCIONES RDS EN ESPAÑOL ---
-        const getRdsDescription = (index) => {
-            const descriptions = [
-                "6 bolas. Embocar con la mano (sin taco).", // L1
-                "6 bolas. Cualquier orden. Bola en mano en cada tiro.", // L2
-                "6 bolas. Cualquier orden. 3 'Bola en mano' extras permitidas.", // L3
-                "6 bolas. Cualquier orden. 2 'Bola en mano' extras permitidas.", // L4
-                "6 bolas. Cualquier orden. 1 'Bola en mano' extra permitida.", // L5
-                "7 bolas (3 lisas, 3 rayadas, 8). Reglas de Bola 8. 1 BIH extra.", // L6
-                "9 bolas. Cualquier orden. 1 BIH extra.", // L7
-                "9 bolas (4 lisas, 4 rayadas, 8). Reglas Bola 8. 1 BIH extra.", // L8
-                "15 bolas. Cualquier orden. 2 BIH extras.", // L9
-                "6 bolas. En orden numérico (Rotación).", // L10
-                "15 bolas. Cualquier orden. BIH tras el saque.", // L11
-                "15 bolas. Reglas estándar de Bola 8.", // L12
-                "9 bolas (4L, 4R, 8). Reglas Bola 8, luego las restantes en orden.", // L13
-                "9 bolas. Reglas estándar de Bola 9.", // L14
-                "15 bolas. Reglas Bola 8, luego las restantes en orden.", // L15
-                "15 bolas. En orden numérico (Rotación completa)." // L16
-            ];
-            return descriptions[index] || "Reglas avanzadas.";
-        };
-
-        // GENERACIÓN DE DATOS
+        // --- GENERADORES DE DATOS ---
+        
+        // Generador Examen III (Tiros Avanzados)
         const generateExam3Drills = () => {
             const drills = [];
             drills.push({
@@ -126,26 +105,75 @@
             return drills;
         };
 
-        // --- DATOS PRINCIPALES ---
+        // Generador Examen V (PPC - Placement Pool Challenge)
+        const generatePPCData = () => {
+            const drills = [];
+            
+            // Ejercicio 1: Solo (Pag 68)
+            drills.push({
+                id: "PPC-1",
+                name: "Ejercicio 1",
+                desc: "Layout 1 de PPC.",
+                pdf_page: 68,
+                max_score: 100, total_shots: 100, scoringType: 'deduction', // Scoring simplificado, el PPC real deduce del total
+                // Nota: En PPC la puntuación es global (se parte de 100 y se resta).
+                // Para mantener la consistencia, usaremos un input de 'Errores' en este ejercicio que reste del global.
+                // Pero para simplificar la UI por ejercicio:
+                subDrills: [{ id: "PPC-1", name: "Layout 1", max_score: 100, total_shots: 1, scoringType: 'deduction' }]
+            });
+
+            // Ejercicios 2 a 17: Pares
+            for (let i = 2; i <= 17; i += 2) {
+                // Pags: 2-3 (69), 4-5 (70), 6-7 (71), 8-9 (72), 10-11 (73), 12-13 (74), 14-15 (75), 16-17 (76)
+                const page = 68 + (i / 2); 
+                const id1 = `PPC-${i}`;
+                const id2 = `PPC-${i+1}`;
+                
+                drills.push({
+                    id: `${id1}-${id2}`,
+                    name: `Ejercicios ${i} y ${i+1}`,
+                    desc: "Layouts PPC.",
+                    pdf_page: page,
+                    isGroup: true,
+                    subDrills: [
+                        { id: id1, name: `Layout ${i}`, max_score: 100, total_shots: 1, scoringType: 'deduction' },
+                        { id: id2, name: `Layout ${i+1}`, max_score: 100, total_shots: 1, scoringType: 'deduction' }
+                    ]
+                });
+            }
+
+            // Ejercicio 18: Solo (Pag 77)
+            drills.push({
+                id: "PPC-18",
+                name: "Ejercicio 18",
+                desc: "Layout 18 de PPC.",
+                pdf_page: 77,
+                max_score: 100, total_shots: 1, scoringType: 'deduction',
+                subDrills: [{ id: "PPC-18", name: "Layout 18", max_score: 100, total_shots: 1, scoringType: 'deduction' }]
+            });
+
+            return drills;
+        };
+
         const examsData = {
             I: {
-                id: "I", title: "Examen I - Fundamentos", desc: "Ejercicios progresivos para evaluar postura, golpe y control básico.",
+                id: "I", title: "Examen I - Fundamentos", desc: "Ejercicios progresivos.",
                 drills: [
                     { id: "F1", name: "Tiro de Corte", desc: "Práctica progresiva. 10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive' },
                     { id: "F2", name: "Tiro de Stop", desc: "Detener CB en zona fantasma.", max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive' },
                     { id: "F3", name: "Tiro Corrido", desc: "Seguir a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive' },
                     { id: "F4", name: "Tiro de Retroceso", desc: "Retroceder a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive' },
-                    { id: "F5", name: "Tiro Seco (Stun)", desc: "Control de stun a objetivos.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' },
+                    { id: "F5", name: "Tiro Seco", desc: "Control de stun.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' },
                     { id: "F6", name: "Embocar Bolas", desc: "Sin tocar bandas innecesarias.", max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count' },
-                    { id: "F7", name: "Rueda de Carreta", desc: "Control de dirección tras impacto.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' },
-                    { id: "F8", name: "Objetivo en Rejilla", desc: "Posición precisa en la mesa.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' }
+                    { id: "F7", name: "Rueda de Carreta", desc: "Control de dirección.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' },
+                    { id: "F8", name: "Objetivo en Rejilla", desc: "Posición precisa.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' }
                 ]
             },
             II: {
-                id: "II", title: "Examen II - Habilidades", desc: "Situaciones reales de juego por nivel.", levels: ["Bachelors", "Masters", "Doctorate"],
+                id: "II", title: "Examen II - Habilidades", desc: "Situaciones reales por nivel.", levels: ["Bachelors", "Masters", "Doctorate"],
                 drills: [
-                    { id: "S1", name: "Línea de Bolas", max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, total_shots: 2, scoringType: 'best_of', desc_es: "Limpiar bolas en rotación. 2 Intentos, cuenta el mejor.", pdf_page: {Bachelors: 9, Masters: 23, Doctorate: 37} },
-                    { id: "S2", name: "Corte de Banda", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: 2, scoringType: 'best_of', desc_es: "Embocar bolas pegadas a banda. 2 Intentos, cuenta el mejor.", pdf_page: {Bachelors: 10, Masters: 24, Doctorate: 38} },
+                    { id: "S1", name: "Línea de Bolas", max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, total_shots: 2, scoringType: 'best_of', pdf_page: {Bachelors: 9, Masters: 23, Doctorate: 37} },
+                    { id: "S2", name: "Corte de Banda", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: 2, scoringType: 'best_of', pdf_page: {Bachelors: 10, Masters: 24, Doctorate: 38} },
                     { id: "S3", name: "Patrones Bola 9", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', has_variations: true, 
                       variations: [
                           { id: "S3-L1", name: "Layout 1", pdf_page: { Bachelors: 11, Masters: 25, Doctorate: 39 }, max_score: 10, total_shots: 1, scoringType: 'count' },
@@ -160,49 +188,106 @@
                           { id: "S4-L3", name: "Layout 3", pdf_page: { Bachelors: 16, Masters: 30, Doctorate: 44 }, max_score: 10, total_shots: 1, scoringType: 'count' }
                       ]
                     },
-                    { id: "S5", name: "Defensas", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, scoringType: 'count', desc_es: "Esconder CB detrás de obstáculos.", pdf_page: {Bachelors: 17, Masters: 31, Doctorate: 45} },
-                    { id: "S6", name: "Tiro de Retruque", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Golpear OBs rebotando en banda.", pdf_page: {Bachelors: 18, Masters: 32, Doctorate: 46} },
-                    { id: "S7", name: "Tiro de Banda", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Embocar OBs rebotando en banda opuesta.", pdf_page: {Bachelors: 19, Masters: 33, Doctorate: 47} },
-                    { id: "S8", name: "Tiro Elevado", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Tirar por encima de obstáculos.", pdf_page: {Bachelors: 20, Masters: 34, Doctorate: 48} },
-                    { id: "S9", name: "Salto o Massé", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Saltar o curvar alrededor de obstáculo.", pdf_page: {Bachelors: 21, Masters: 35, Doctorate: 49} },
-                    { id: "S10", name: "Saque", max_score: 5, total_shots: 3, scoringType: 'median', desc_es: "3 Saques. Se toma la puntuación media.", pdf_page: {Bachelors: 22, Masters: 36, Doctorate: 50} }
+                    { id: "S5", name: "Defensas", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, scoringType: 'count', pdf_page: {Bachelors: 17, Masters: 31, Doctorate: 45} },
+                    { id: "S6", name: "Tiro de Retruque", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 18, Masters: 32, Doctorate: 46} },
+                    { id: "S7", name: "Tiro de Banda", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 19, Masters: 33, Doctorate: 47} },
+                    { id: "S8", name: "Tiro Elevado", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 20, Masters: 34, Doctorate: 48} },
+                    { id: "S9", name: "Salto o Massé", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: {Bachelors: 21, Masters: 35, Doctorate: 49} },
+                    { id: "S10", name: "Saque", max_score: 5, total_shots: 3, scoringType: 'median', pdf_page: {Bachelors: 22, Masters: 36, Doctorate: 50} }
                 ]
             },
             III: {
-                id: "III", title: "Examen III - Tiros Avanzados", desc: "25 tiros específicos avanzados.",
+                id: "III", title: "Examen III - Tiros Avanzados", desc: "25 tiros específicos.",
                 drills: generateExam3Drills()
             },
             IV: {
-                id: "IV", title: "RDS - Sistema de Limpieza", desc: "16 Niveles. Sacar y limpiar mesa con reglas variables.",
+                id: "IV", title: "RDS - Sistema de Limpieza", desc: "16 Niveles.",
                 drills: Array.from({length: 16}, (_, i) => {
-                     // Mapeo de páginas para RDS
                      let page = 65;
                      if (i >= 6 && i <= 11) page = 66;
                      if (i >= 12) page = 67;
                      return {
-                        id: `L${i+1}`, 
-                        name: `Nivel ${i+1}`, 
-                        desc: getRdsDescription(i), 
-                        max_score: 100, 
-                        total_shots: 1, 
-                        scoringType: 'pass_fail', 
-                        pdf_page: page
+                        id: `L${i+1}`, name: `Nivel ${i+1}`, max_score: 100, total_shots: 1, scoringType: 'pass_fail', pdf_page: page
                     };
                 })
             },
             V: {
-                id: "V", title: "PPC", desc: "18 Configuraciones jugadas consecutivamente.",
-                drills: [{ id: "PPC", name: "Desafío Completo", desc: "Jugar las 18 configuraciones. Inicia con 100pts.", max_score: 100, total_shots: 18, scoringType: 'deduction', pdf_page: 68 }]
+                id: "V", title: "PPC - Desafío de Colocación", desc: "18 Layouts (1-18).",
+                drills: generatePPCData()
             },
             VI: {
-                id: "VI", title: "Desafío de Seguridad", desc: "20 Tiros defensivos. Esconder la bola blanca.",
+                id: "VI", title: "Desafío de Seguridad", desc: "20 Tiros defensivos.",
                 drills: Array.from({length: 20}, (_, i) => ({
-                    id: `Safe${i+1}`, name: `Defensa ${i+1}`, desc: "Ejecutar tiro defensivo específico.", max_score: 1, total_shots: 1, scoringType: 'count', pdf_page: 78 + Math.floor(i/2)
+                    id: `Safe${i+1}`, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count', pdf_page: 78 + Math.floor(i/2)
                 }))
             }
         };
 
-        // --- COMPONENTS ---
+        // --- COMPONENTES PUNTUACIÓN ---
+
+        const MiniScoringPanel = ({ drill, examId, updateScore, allExamScores }) => {
+            const currentScore = allExamScores[drill.id] || 0;
+            const scoringType = drill.scoringType || 'count';
+            
+            // Manejo especial para deducción (PPC)
+            if (scoringType === 'deduction') {
+                // En PPC, currentScore idealmente es 0 (errores) si no se ha jugado, o N errores.
+                // Pero el sistema global guarda "puntos". Si es PPC, asumimos que guardamos "errores" directamente para este sub-drill
+                // O guardamos puntos restantes. Vamos a guardar ERRORES para simplificar la mini-UI.
+                // Espera, la app global suma puntos.
+                // Para PPC, la lógica global suele ser: 100 - (suma de errores de todos los layouts).
+                // Así que aquí guardaremos "Errores cometidos" en este layout.
+                
+                const errors = currentScore; 
+                
+                const handleAddError = () => updateScore(examId, drill.id, errors + 1);
+                const handleSubError = () => updateScore(examId, drill.id, Math.max(0, errors - 1));
+                const handleReset = () => updateScore(examId, drill.id, 0);
+
+                return (
+                    <div className="bg-red-50 p-4 rounded-xl border border-red-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                            <div><h4 className="font-bold text-red-900">{drill.name}</h4><span className="text-xs text-red-400 font-bold uppercase">Faltas/Errores: {errors}</span></div>
+                            <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
+                        </div>
+                        <div className="flex gap-3 items-center justify-center bg-white p-2 rounded-lg border border-red-100">
+                            <button onClick={handleSubError} className="w-10 h-10 rounded-full bg-gray-100 text-red-600 hover:bg-red-50 flex items-center justify-center transition"><Minus size={18}/></button>
+                            <span className="font-black text-2xl text-red-600 min-w-[2ch] text-center">{errors}</span>
+                            <button onClick={handleAddError} className="w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center transition"><Plus size={18}/></button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Standard Count / Weighted mini
+            const totalShots = drill.total_shots || 10;
+            const maxScore = drill.max_score || 10;
+            const [attemptsMade, setAttemptsMade] = useState(0);
+            useEffect(() => { if (currentScore > 0) setAttemptsMade(Math.max(currentScore, attemptsMade)); }, [currentScore]);
+
+            const handleHit = () => { if (attemptsMade < totalShots) { updateScore(examId, drill.id, Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
+            const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
+            const handleReset = () => { updateScore(examId, drill.id, 0); setAttemptsMade(0); };
+
+            return (
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                        <div><h4 className="font-bold text-gray-800">{drill.name}</h4><span className="text-xs text-gray-400 font-bold uppercase">{currentScore} Aciertos / {attemptsMade} Intentos</span></div>
+                        <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
+                    </div>
+                    <div className="flex gap-3 mb-2">
+                        <button onClick={handleMiss} disabled={attemptsMade >= totalShots} className="flex-1 bg-red-100 text-red-600 border border-red-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-red-200 active:scale-95 disabled:opacity-50">Fallo</button>
+                        <button onClick={handleHit} disabled={attemptsMade >= totalShots} className="flex-1 bg-green-100 text-green-600 border border-green-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-green-200 active:scale-95 disabled:opacity-50">Acierto</button>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden"><div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{width: `${(attemptsMade / totalShots) * 100}%`}}></div></div>
+                </div>
+            );
+        };
+
+        // ... (Se mantienen igual: ScoringPanel, PracticeModal, etc.) ...
+        // Copia idéntica de los componentes ScoringPanel y PracticeModal de la respuesta anterior,
+        // PERO asegurando que en PracticeModal NO se muestre la X de cierre en el panel derecho.
+        
         const ScoringPanel = ({ drill, score, onScoreChange, lang, level, onClose, onReset, onNext, isLast }) => {
             const currentScore = Number(score) || 0;
             let totalShots = (typeof drill.total_shots === 'object' && drill.total_shots !== null) ? (drill.total_shots[level] || 10) : (drill.total_shots || 10);
@@ -210,6 +295,7 @@
             const [attemptsMade, setAttemptsMade] = useState(0);
             useEffect(() => { if (currentScore > 0 && attemptsMade === 0) { /* Sync if needed */ } }, []);
 
+            // Progressive Logic ... (Igual)
             if (drill.scoringType === 'progressive') {
                 const [pos, setPos] = useState(0);
                 const [bonus, setBonus] = useState(0);
@@ -217,7 +303,7 @@
                 const update = (newPos, newBonus) => { let p = Math.max(0, Math.min(7, newPos)); let b = Math.max(0, newBonus); if (p < 7) b = 0; if (p + b > 10) b = 10 - p; setPos(p); setBonus(b); onScoreChange(p + b); };
                 return (
                     <div className="flex flex-col h-full p-6 relative">
-                        <button onClick={onReset} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 p-2"><RotateCcw size={16} /></button>
+                        <button onClick={onReset} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 p-2" title="Reiniciar"><RotateCcw size={16} /></button>
                         <h3 className="text-xl font-black text-gray-800 uppercase text-center mb-6">{drill.name}</h3>
                         <div className="flex-grow flex flex-col gap-6 justify-center">
                              <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm"><div className="flex justify-between mb-4"><span className="font-bold text-blue-900">POSICIÓN (1-7)</span><span className="text-4xl font-black text-blue-600">{pos}</span></div><div className="flex gap-3"><button onClick={() => update(pos - 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow text-blue-600 text-xl"><Minus /></button><button onClick={() => update(pos + 1, bonus)} className="flex-1 py-3 bg-white rounded-lg shadow text-blue-600 text-xl"><Plus /></button></div></div>
@@ -228,14 +314,14 @@
                 );
             }
 
+            // Standard Logic ...
             const handleHit = () => { if (attemptsMade < totalShots) { onScoreChange(Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
             const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
-            useEffect(() => { if (currentScore > 0 && attemptsMade === 0) setAttemptsMade(currentScore); }, []);
             const handleLocalReset = () => { onReset(); setAttemptsMade(0); }
 
             return (
                 <div className="flex flex-col h-full p-8 items-center justify-between relative">
-                    <button onClick={handleLocalReset} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2 hover:bg-gray-100 rounded-lg"><RotateCcw size={16} /> Reiniciar</button>
+                    <button onClick={handleLocalReset} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 p-2" title="Reiniciar"><RotateCcw size={16} /></button>
                     <div className="text-center w-full mt-8">
                         <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">{drill.id}</div>
                         <div className="text-6xl font-black text-gray-900 mb-2 tracking-tighter leading-none">{currentScore} <span className="text-4xl text-gray-300 font-medium">/ {totalShots}</span></div>
@@ -251,30 +337,6 @@
                 </div>
             );
         };
-
-        const MiniScoringPanel = ({ drill, examId, updateScore, allExamScores }) => {
-            const currentScore = allExamScores[drill.id] || 0;
-            const totalShots = drill.total_shots || 10;
-            const maxScore = drill.max_score || 10;
-            const [attemptsMade, setAttemptsMade] = useState(0);
-            useEffect(() => { if (currentScore > 0) setAttemptsMade(Math.max(currentScore, attemptsMade)); }, [currentScore]);
-            const handleHit = () => { if (attemptsMade < totalShots) { updateScore(examId, drill.id, Math.min(maxScore, currentScore + 1)); setAttemptsMade(p => p + 1); } };
-            const handleMiss = () => { if (attemptsMade < totalShots) setAttemptsMade(p => p + 1); };
-            const handleReset = () => { updateScore(examId, drill.id, 0); setAttemptsMade(0); };
-            return (
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="flex justify-between items-center mb-3">
-                        <div><h4 className="font-bold text-gray-800">{drill.name}</h4><span className="text-xs text-gray-400 font-bold uppercase">{currentScore} Aciertos / {attemptsMade} Intentos</span></div>
-                        <button onClick={handleReset} className="text-gray-400 hover:text-red-500 p-1"><RotateCcw size={16}/></button>
-                    </div>
-                    <div className="flex gap-3 mb-2">
-                        <button onClick={handleMiss} disabled={attemptsMade >= totalShots} className="flex-1 bg-red-100 text-red-600 border border-red-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-red-200 active:scale-95 disabled:opacity-50">Fallo</button>
-                        <button onClick={handleHit} disabled={attemptsMade >= totalShots} className="flex-1 bg-green-100 text-green-600 border border-green-200 py-3 rounded-lg font-bold text-sm shadow-sm hover:bg-green-200 active:scale-95 disabled:opacity-50">Acierto</button>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden"><div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{width: `${(attemptsMade / totalShots) * 100}%`}}></div></div>
-                </div>
-            );
-        };
         
         const PracticeModalFinal = ({ drill, score, onScoreChange, onClose, onNextDrill, isLastDrill, level, examId, updateScore, allExamScores }) => {
             let pdfPage = drill.pdf_page;
@@ -284,13 +346,14 @@
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
                     <div className="bg-white w-full max-w-7xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in-zoom border border-gray-200">
+                        {/* X de cierre GLOBAL del modal (esquina superior derecha del contenedor principal) */}
                         <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
+
                         <div className="w-full md:w-7/12 bg-gray-100 border-r border-gray-200 relative flex flex-col">
-                             {/* key={drill.id} FORCES RE-RENDER ON DRILL CHANGE */}
                              <iframe key={drill.id} src={getPdfViewerUrl(pdfPage)} className="w-full h-full border-none bg-gray-50" title="Diagrama"></iframe>
                         </div>
                         <div className="w-full md:w-5/12 bg-white flex flex-col relative z-20 overflow-y-auto">
-                             <div className="absolute top-4 right-4 hidden md:block"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition"><X size={24} /></button></div>
+                            {/* Eliminada la X absoluta de aquí para evitar solapamiento con Reiniciar */}
                             {isMultiDrill ? (
                                 <div className="p-8 flex flex-col h-full">
                                     <div className="mb-6 text-center"><h2 className="text-2xl font-black text-gray-900 mb-1">{drill.name}</h2><p className="text-sm text-gray-500">{drill.desc}</p></div>
@@ -308,54 +371,30 @@
             );
         };
 
-        // --- APP LOGIC ---
+        // --- RESTO APP ---
         const LoginScreen = ({ onLogin }) => {
             const [username, setUsername] = useState("");
-            return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-                    <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
-                        <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><Target className="text-white w-8 h-8" /></div>
-                        <h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1>
-                        <p className="text-gray-500 mb-6">Ingresa tu nombre para guardar tu progreso</p>
-                        <form onSubmit={(e) => { e.preventDefault(); if(username.trim()) onLogin(username.trim()); }}>
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus />
-                            <button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Comenzar Entrenamiento</button>
-                        </form>
-                    </div>
-                </div>
-            );
+            return (<div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4"><div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center"><div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><Target className="text-white w-8 h-8" /></div><h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1><p className="text-gray-500 mb-6">Ingresa tu nombre para comenzar</p><form onSubmit={(e) => { e.preventDefault(); if(username.trim()) onLogin(username.trim()); }}><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus /><button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Comenzar Entrenamiento</button></form></div></div>);
         };
         const ExamCard = ({ exam, onSelect }) => (
-            <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div>
-                <div className="flex items-center gap-4 mb-4 relative z-10"><div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">{exam.id === 'I' && <RotateCcw size={28} />}{exam.id === 'II' && <Shield size={28} />}{exam.id === 'III' && <Trophy size={28} />}{['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}</div><h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2></div><p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p><div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" /></div>
-            </div>
+            <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"><div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div><div className="flex items-center gap-4 mb-4 relative z-10"><div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">{exam.id === 'I' && <RotateCcw size={28} />}{exam.id === 'II' && <Shield size={28} />}{exam.id === 'III' && <Trophy size={28} />}{['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}</div><h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2></div><p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p><div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" /></div></div>
         );
         const ExamDetail = ({ exam, onBack, user, scores, updateScore, resetExamScore }) => {
             const [activeDrill, setActiveDrill] = useState(null);
             const [level, setLevel] = useState("Bachelors");
             const currentDrills = useMemo(() => (exam.id !== 'II' ? exam.drills : exam.drills), [exam, level]);
             const handleResetExam = () => { if(confirm("¿Estás seguro de reiniciar este examen?")) resetExamScore(exam.id); };
-            const handleNextDrill = () => {
-                if (!activeDrill) return;
-                const currentIndex = currentDrills.findIndex(d => d.id === activeDrill.id);
-                if (currentIndex >= 0 && currentIndex < currentDrills.length - 1) setActiveDrill(currentDrills[currentIndex + 1]);
-                else setActiveDrill(null);
-            };
+            const handleNextDrill = () => { if (!activeDrill) return; const currentIndex = currentDrills.findIndex(d => d.id === activeDrill.id); if (currentIndex >= 0 && currentIndex < currentDrills.length - 1) setActiveDrill(currentDrills[currentIndex + 1]); else setActiveDrill(null); };
             const isLastDrill = activeDrill ? currentDrills.findIndex(d => d.id === activeDrill.id) === currentDrills.length - 1 : false;
             return (
                 <div className="max-w-6xl mx-auto p-6 pb-24">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4"><div className="flex items-center gap-4"><button onClick={onBack} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 shadow-sm"><ChevronLeft size={24} /></button><div><h2 className="text-3xl font-black text-gray-900">{exam.title}</h2><p className="text-gray-500">{exam.desc}</p></div></div><div className="flex items-center gap-3"><button onClick={handleResetExam} className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg font-bold text-sm transition border border-transparent hover:border-red-100"><RotateCcw size={16} /> Reiniciar Nivel</button>{exam.id === 'II' && <div className="flex bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">{['Bachelors', 'Masters', 'Doctorate'].map(l => <button key={l} onClick={() => setLevel(l)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${level === l ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}>{l === 'Bachelors' ? 'Licenciatura' : l === 'Masters' ? 'Maestría' : 'Doctorado'}</button>)}</div>}</div></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {currentDrills.map((drill) => {
-                            let currentScore = 0;
-                            let maxDisplay = 0;
-                            if (drill.isGroup) { drill.subDrills.forEach(sd => { currentScore += (scores[exam.id] ? (scores[exam.id][sd.id] || 0) : 0); maxDisplay += sd.max_score; }); } 
-                            else { currentScore = scores[exam.id] ? (scores[exam.id][drill.id] || 0) : 0; maxDisplay = (typeof drill.max_score === 'object' ? drill.max_score[level] : drill.max_score) || 10; }
+                            let currentScore = 0; let maxDisplay = 0;
+                            if (drill.isGroup) { drill.subDrills.forEach(sd => { currentScore += (scores[exam.id] ? (scores[exam.id][sd.id] || 0) : 0); maxDisplay += sd.max_score; }); } else { currentScore = scores[exam.id] ? (scores[exam.id][drill.id] || 0) : 0; maxDisplay = (typeof drill.max_score === 'object' ? drill.max_score[level] : drill.max_score) || 10; }
                             return (
-                                <div key={drill.id} onClick={() => setActiveDrill(drill)} className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group relative overflow-hidden">
-                                    <div className="flex justify-between items-start mb-4 relative z-10"><div className="bg-gray-100 text-gray-600 font-bold w-12 h-12 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 text-lg">{drill.id.split('-')[0]}</div>{currentScore > 0 && <CheckCircle className="text-green-500" size={24} />}{drill.isGroup && <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Multi</span>}</div><h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-green-700 transition-colors relative z-10">{drill.name}</h3><p className="text-sm text-gray-500 mb-4 line-clamp-2 relative z-10">{drill.desc}</p><div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden"><div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(currentScore / maxDisplay) * 100}%` }}></div></div>
-                                </div>
+                                <div key={drill.id} onClick={() => setActiveDrill(drill)} className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group relative overflow-hidden"><div className="flex justify-between items-start mb-4 relative z-10"><div className="bg-gray-100 text-gray-600 font-bold w-12 h-12 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 text-lg">{drill.id.split('-')[0]}</div>{currentScore > 0 && <CheckCircle className="text-green-500" size={24} />}{drill.isGroup && <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Multi</span>}</div><h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-green-700 transition-colors relative z-10">{drill.name}</h3><p className="text-sm text-gray-500 mb-4 line-clamp-2 relative z-10">{drill.desc}</p><div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden"><div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(currentScore / maxDisplay) * 100}%` }}></div></div></div>
                             );
                         })}
                     </div>
