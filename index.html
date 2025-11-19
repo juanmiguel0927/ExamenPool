@@ -1,772 +1,594 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Trophy, Target, Shield, RotateCcw, ChevronLeft, Globe, Info, CheckCircle, Save, Trash2, ExternalLink, AlertCircle, Plus, Minus, User, LogOut, Hash, Check, X, BarChart2, GraduationCap } from 'lucide-react';
-
-// --- CONFIGURACIÓN ---
-
-const PDF_URL = "https://cdn.jsdelivr.net/gh/juanmiguel0927/ExamenPool@67236543a59fea85da25afc8d1d8c9afd7c9383b/All.pdf";
-
-const LEVELS = [
-    { name_es: "Novato", name_en: "Novice", min: 0, color: "text-gray-500", bg: "bg-gray-100" },
-    { name_es: "Principiante", name_en: "Beginner", min: 50, color: "text-green-500", bg: "bg-green-100" },
-    { name_es: "Aficionado", name_en: "Amateur", min: 100, color: "text-blue-500", bg: "bg-blue-100" },
-    { name_es: "Intermedio", name_en: "Intermediate", min: 150, color: "text-indigo-500", bg: "bg-indigo-100" },
-    { name_es: "Avanzado", name_en: "Advanced", min: 200, color: "text-purple-500", bg: "bg-purple-100" },
-    { name_es: "Semiprofesional", name_en: "Semi-Pro", min: 250, color: "text-orange-500", bg: "bg-orange-100" },
-    { name_es: "Maestro", name_en: "Master", min: 300, color: "text-red-600", bg: "bg-red-100" },
-    { name_es: "Leyenda", name_en: "Legend", min: 350, color: "text-yellow-600", bg: "bg-yellow-100" }
-];
-
-// --- DATOS ---
-
-const glossaryTerms = [
-    { term: "CB (Cue Ball)", def_en: "The white ball struck by the cue.", def_es: "Bola Blanca (Mingo). La bola blanca golpeada por el taco." },
-    { term: "OB (Object Ball)", def_en: "The ball the cue ball strikes.", def_es: "Bola Objetivo. La bola a la que golpea la bola blanca." },
-    { term: "BIH (Ball In Hand)", def_en: "Player can place the cue ball anywhere on the table.", def_es: "Bola en Mano. El jugador puede colocar la bola blanca en cualquier lugar de la mesa." },
-    { term: "Cut Shot", def_en: "A shot where the CB strikes the OB at an angle.", def_es: "Tiro de Corte / Fina. Un tiro donde la blanca golpea la objetivo en ángulo." },
-    { term: "Stop Shot", def_en: "The CB stops immediately after contacting the OB.", def_es: "Tiro de Stop / Clavada. La blanca se detiene inmediatamente tras el impacto." },
-    { term: "Follow Shot", def_en: "The CB continues forward after contact (top spin).", def_es: "Tiro Corrido / Follow. La blanca sigue hacia adelante (efecto arriba)." },
-    { term: "Draw Shot", def_en: "The CB spins backwards after contact (back spin).", def_es: "Tiro de Retroceso / Draw / Jalar. La blanca retrocede (efecto abajo)." },
-    { term: "Stun Shot", def_en: "The CB slides into the OB with no forward/backward roll.", def_es: "Tiro Seco / Stun. La blanca golpea deslizando sin rotación, saliendo en la línea tangente." },
-    { term: "Ghost Ball", def_en: "Imaginary position of the CB at the moment of impact.", def_es: "Bola Fantasma. Posición imaginaria de la blanca en el momento del impacto." },
-    { term: "Rail / Cushion", def_en: "The padded sides of the table.", def_es: "Banda. Los lados acolchados de la mesa." },
-    { term: "Scratch", def_en: "Pocketing the Cue Ball (foul).", def_es: "Suicidio / Mingo / Falta. Embocar la bola blanca." },
-    { term: "Diamond", def_en: "Markers on the rails used for aiming.", def_es: "Diamante. Marcadores en las bandas usados para apuntar." },
-    { term: "Safety", def_en: "Defensive shot aiming to leave the opponent difficult.", def_es: "Defensa. Tiro defensivo para dejar al oponente en una situación difícil." },
-    { term: "Bank Shot", def_en: "Driving an OB into a rail to pocket it.", def_es: "Tiro de Banda / Doblete. Golpear una bola objetivo contra una banda para embocarla." },
-    { term: "Kick Shot", def_en: "Driving the CB into a rail to hit an OB.", def_es: "Tiro de Retruque / Bricol. Golpear la blanca contra una banda antes de dar a la objetivo." },
-    { term: "Masse", def_en: "Curving the CB path using extreme elevation and spin.", def_es: "Massé. Curvar la trayectoria de la blanca usando elevación y efecto." }
-];
-
-const examsData = {
-    I: {
-        id: "I",
-        title_en: "Exam I - Fundamentals",
-        title_es: "Examen I - Fundamentos",
-        desc_en: "Progressive drills to test stance, stroke, and basic cue ball control.",
-        desc_es: "Ejercicios progresivos para evaluar postura, golpe y control básico de la bola blanca.",
-        drills: [
-            { 
-                id: "F1", name_en: "Cut Shot Drill", name_es: "Tiro de Corte",
-                desc_en: "Progressive practice. Start CB at pos 4. Pocket OB. Success: move back. Miss: move forward.",
-                desc_es: "Práctica progresiva. Inicia CB en pos 4. Emboca OB. Éxito: atrás. Fallo: adelante.",
-                max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive',
-                scoring_en: "Final Position + Bonus.", scoring_es: "Posición Final + Bono."
-            },
-            { 
-                id: "F2", name_en: "Stop Shot Drill", name_es: "Tiro de Stop",
-                desc_en: "Progressive. Stop CB within 1 ball of Ghost Ball position.",
-                desc_es: "Progresivo. Detener CB a menos de 1 bola de la posición fantasma.",
-                max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive',
-                scoring_en: "Final Position + Bonus.", scoring_es: "Posición Final + Bono."
-            },
-            { 
-                id: "F3", name_en: "Follow Shot Drill", name_es: "Tiro Corrido (Follow)",
-                desc_en: "Progressive. Follow to target rectangle in corner.",
-                desc_es: "Progresivo. Corrido hacia el rectángulo objetivo en la esquina.",
-                max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive',
-                scoring_en: "Final Position + Bonus.", scoring_es: "Posición Final + Bono."
-            },
-            { 
-                id: "F4", name_en: "Draw Shot Drill", name_es: "Tiro de Retroceso (Draw)",
-                desc_en: "Progressive. Draw CB back into the 2x1 diamond rectangle.",
-                desc_es: "Progresivo. Retrocede la CB hacia el rectángulo de 2x1 diamantes.",
-                max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive',
-                scoring_en: "Final Position + Bonus.", scoring_es: "Posición Final + Bono."
-            },
-            { 
-                id: "F5", name_en: "Stun Shot Drill", name_es: "Tiro Seco (Stun)",
-                desc_en: "Target moves. Stun CB to stop in target areas.",
-                desc_es: "El objetivo se mueve. Stun a la CB para parar en áreas objetivo.",
-                max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive',
-                scoring_en: "Final Target # + Bonus.", scoring_es: "# Objetivo Final + Bono."
-            },
-            { 
-                id: "F6", name_en: "Ball Pocketing Drill", name_es: "Embocar Bolas",
-                desc_en: "5 shots from each of 2 CB positions.",
-                desc_es: "5 tiros desde cada una de las 2 posiciones de CB.",
-                max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count',
-                scoring_en: "1 point per ball pocketed.", scoring_es: "1 punto por bola embocada."
-            },
-            { 
-                id: "F7", name_en: "Wagon Wheel Drill", name_es: "Rueda de Carreta",
-                desc_en: "Pocket OB and send CB to hit rail target balls.",
-                desc_es: "Emboca OB y envía CB a golpear bolas objetivo en la banda.",
-                max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count',
-                scoring_en: "1 point per success.", scoring_es: "1 punto por éxito."
-            },
-            { 
-                id: "F8", name_en: "Grid Target Drill", name_es: "Objetivo en Rejilla",
-                desc_en: "Pocket OB and leave CB in target rectangles.",
-                desc_es: "Emboca OB y deja la CB en rectángulos objetivo.",
-                max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count',
-                scoring_en: "1 point per success.", scoring_es: "1 punto por éxito."
-            }
-        ]
-    },
-    II: {
-        id: "II",
-        title_en: "Exam II - Skills",
-        title_es: "Examen II - Habilidades",
-        desc_en: "Real game situations separated by difficulty levels.",
-        desc_es: "Situaciones reales de juego separadas por nivel de dificultad.",
-        levels: ["Bachelors", "Masters", "Doctorate"],
-        drills: [
-            { id: "S1", name_en: "Line of Balls", name_es: "Línea de Bolas", max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, total_shots: 2, scoringType: 'best_of', desc_es: "Limpiar bolas en rotación. 2 Intentos, cuenta el mejor.", pdf_page: 9 },
-            { id: "S2", name_en: "Rail Cut Shot", name_es: "Corte de Banda", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: 2, scoringType: 'best_of', desc_es: "Embocar bolas pegadas a banda. 2 Intentos, cuenta el mejor.", pdf_page: 10 },
-            { id: "S3", name_en: "9-Ball Patterns", name_es: "Patrones de Bola 9", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', desc_es: "3 configuraciones. Suma de los 2 peores puntajes.", pdf_page: 11 },
-            { id: "S4", name_en: "8-Ball Patterns", name_es: "Patrones de Bola 8", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', desc_es: "3 configuraciones. Suma de los 2 peores puntajes.", pdf_page: 14 },
-            { id: "S5", name_en: "Safety Drill", name_es: "Defensas", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, scoringType: 'count', desc_es: "Esconder CB detrás de obstáculos.", pdf_page: 17 },
-            { id: "S6", name_en: "Kick Shot", name_es: "Tiro de Retruque", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Golpear OBs rebotando en banda.", pdf_page: 18 },
-            { id: "S7", name_en: "Bank Shot", name_es: "Tiro de Banda", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Embocar OBs rebotando en banda opuesta.", pdf_page: 19 },
-            { id: "S8", name_en: "Elevated Cue", name_es: "Tiro Elevado", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Tirar por encima de obstáculos.", pdf_page: 20 },
-            { id: "S9", name_en: "Jump/Masse", name_es: "Salto o Massé", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', desc_es: "Saltar o curvar alrededor de obstáculo.", pdf_page: 21 },
-            { id: "S10", name_en: "Break Drill", name_es: "Saque", max_score: 5, total_shots: 3, scoringType: 'median', desc_es: "3 Saques. Se toma la puntuación media.", pdf_page: 22 }
-        ]
-    },
-    III: {
-        id: "III",
-        title_en: "Exam III - Advanced Shots",
-        title_es: "Examen III - Tiros Avanzados",
-        desc_en: "25 specific advanced shots. 4 pts for 1st try, 2 for 2nd, 1 for 3rd.",
-        desc_es: "25 tiros avanzados específicos. 4 ptos al 1er intento, 2 al 2º, 1 al 3º.",
-        drills: Array.from({length: 25}, (_, i) => ({
-            id: `A${i+1}`, 
-            name_en: `Shot A${i+1}`, 
-            name_es: `Tiro A${i+1}`,
-            desc_es: "Ver PDF para diagrama específico.",
-            max_score: 4,
-            total_shots: 3,
-            scoringType: 'weighted', 
-            pdf_page: 51 + Math.floor(i/2) 
-        }))
-    },
-    IV: {
-        id: "IV",
-        title_en: "RDS",
-        title_es: "RDS - Sistema de Limpieza",
-        desc_es: "16 Niveles. Sacar y limpiar mesa con reglas variables.",
-        drills: Array.from({length: 16}, (_, i) => ({
-            id: `L${i+1}`, 
-            name_es: `Nivel ${i+1}`,
-            desc_es: i < 5 ? "X bolas, Cualquier Orden." : "Reglas complejas.",
-            max_score: 100,
-            total_shots: 1,
-            scoringType: 'pass_fail',
-            pdf_page: 65 + Math.floor(i/4)
-        }))
-    },
-    V: {
-        id: "V",
-        title_en: "PPC",
-        title_es: "PPC - Desafío de Colocación",
-        desc_es: "18 Configuraciones jugadas consecutivamente.",
-        drills: [
-            { 
-                id: "PPC", name_es: "Desafío Completo", 
-                desc_es: "Jugar las 18 configuraciones. Inicia con 100pts.", 
-                max_score: 100, total_shots: 18, scoringType: 'deduction', pdf_page: 68
-            }
-        ]
-    },
-    VI: {
-        id: "VI",
-        title_en: "Safety Challenge",
-        title_es: "Desafío de Seguridad",
-        desc_es: "20 Tiros defensivos. Esconder la bola blanca.",
-        drills: Array.from({length: 20}, (_, i) => ({
-            id: `Safe${i+1}`, 
-            name_es: `Defensa ${i+1}`,
-            desc_es: "Ejecutar tiro defensivo específico.",
-            max_score: 1,
-            total_shots: 1,
-            scoringType: 'count',
-            pdf_page: 78 + Math.floor(i/2)
-        }))
-    }
-};
-
-// --- COMPONENTES DE PUNTUACIÓN INTELIGENTE ---
-
-const ScoringPanel = ({ drill, score, onScoreChange, lang, level, onClose }) => {
-    const currentScore = Number(score) || 0;
-
-    let totalShots = drill.total_shots;
-    if (typeof totalShots === 'object' && totalShots !== null) {
-        totalShots = totalShots[level] || 10;
-    }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiro Maestro - Billiard University</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    let maxScore = drill.max_score;
-    if (typeof maxScore === 'object' && maxScore !== null) {
-        maxScore = maxScore[level] || 10;
-    }
-
-    // Lógica específica para examen progresivo
-    const isProgressive = drill.scoringType === 'progressive';
-    const displayTotal = isProgressive ? 10 : maxScore; // En progresivo siempre es base 10 aunque visualmente sea posición
-
-    return (
-        <div className="bg-white rounded-lg p-6 flex flex-col h-full justify-between">
-            {/* Header */}
-            <div className="border-b border-gray-100 pb-4 mb-4">
-                <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-black text-xl text-gray-800 uppercase tracking-tight">{lang === 'en' ? drill.name_en : drill.name_es}</h3>
-                    <span className="text-xs font-bold text-gray-400">{drill.id}</span>
-                </div>
-                
-                <div className="bg-gray-50 rounded-md p-2 flex justify-between items-center text-xs text-gray-600">
-                    <span>{lang === 'en' ? 'Best Score:' : 'Mejor Puntuación:'} <span className="font-bold">{currentScore} / {displayTotal}</span></span>
-                </div>
-            </div>
-
-            {/* Main Display */}
-            <div className="flex-grow flex flex-col items-center justify-center mb-8">
-                <div className="text-center mb-8">
-                    <div className="text-5xl font-black text-blue-600 mb-2 flex items-center justify-center gap-2">
-                        {currentScore} <span className="text-2xl text-gray-400 font-normal">/ {totalShots}</span>
-                    </div>
-                    <div className="text-xl font-bold text-gray-500">
-                        {lang === 'en' ? 'Hits / Attempts' : 'Aciertos / Intentos'}
-                    </div>
-                </div>
-
-                {/* Action Buttons - Red/Green Big Buttons */}
-                <div className="flex gap-4 w-full">
-                    <button 
-                        onClick={() => onScoreChange(Math.max(0, currentScore - 1))}
-                        className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold text-xl py-6 rounded-lg shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        {lang === 'en' ? 'Miss' : 'Fallo'}
-                    </button>
-                    <button 
-                        onClick={() => onScoreChange(Math.min(maxScore, currentScore + 1))}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-6 rounded-lg shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        {lang === 'en' ? 'Hit' : 'Acierto'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Footer Button */}
-            <button 
-                onClick={onClose}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition shadow-md text-sm uppercase tracking-wider"
-            >
-                {lang === 'en' ? 'Save Progress & Exit' : 'Guardar Progreso y Salir'}
-            </button>
-        </div>
-    );
-};
-
-const LoginScreen = ({ onLogin, lang }) => {
-    const [username, setUsername] = useState("");
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (username.trim()) {
-            onLogin(username.trim());
-        }
-    };
-
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
-                <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                    <Target className="text-white w-8 h-8" />
-                </div>
-                <h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1>
-                <p className="text-gray-500 mb-6">{lang === 'en' ? 'Enter your name to start tracking your progress' : 'Ingresa tu nombre para guardar tu progreso'}</p>
-                
-                <form onSubmit={handleSubmit}>
-                    <input 
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder={lang === 'en' ? "Your Name" : "Tu Nombre"}
-                        className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none"
-                        autoFocus
-                    />
-                    <button 
-                        type="submit"
-                        disabled={!username.trim()}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {lang === 'en' ? 'Start Training' : 'Comenzar Entrenamiento'}
-                    </button>
-                </form>
-            </div>
-        </div>
-    );
-};
-
-const UserProfile = ({ user, scores, lang, goBack }) => {
-    const totalScore = useMemo(() => {
-        let sum = 0;
-        Object.keys(examsData).forEach(examKey => {
-            const examScores = scores[examKey] || {};
-            Object.values(examScores).forEach(val => {
-                sum += Number(val) || 0;
-            });
-        });
-        return sum;
-    }, [scores]);
-
-    const currentLevel = useMemo(() => {
-        const reversed = [...LEVELS].reverse();
-        return reversed.find(l => totalScore >= l.min) || LEVELS[0];
-    }, [totalScore]);
-
-    const nextLevel = LEVELS.find(l => l.min > totalScore);
-    const progress = nextLevel 
-        ? ((totalScore - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100 
-        : 100;
-
-    return (
-        <div className="max-w-4xl mx-auto p-4 pb-20">
-            <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6 transition">
-                <ChevronLeft size={20} /> {lang === 'en' ? 'Back to Menu' : 'Volver al Menú'}
-            </button>
-
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 mb-6">
-                <div className="bg-gray-900 p-6 text-white flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-2xl font-bold border-4 border-white">
-                        {user.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold">{user}</h2>
-                        <p className="opacity-80">{lang === 'en' ? 'Billiard Student' : 'Estudiante de Billar'}</p>
-                    </div>
-                </div>
-
-                <div className="p-6">
-                    <div className="flex flex-col md:flex-row gap-6 justify-between items-center text-center md:text-left mb-8">
-                        <div>
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">{lang === 'en' ? 'Current Rank' : 'Rango Actual'}</p>
-                            <h3 className={`text-4xl font-black ${currentLevel.color}`}>
-                                {lang === 'en' ? currentLevel.name_en : currentLevel.name_es}
-                            </h3>
-                        </div>
-                        <div className="bg-gray-50 px-8 py-4 rounded-xl border border-gray-100">
-                            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider">{lang === 'en' ? 'Total Score' : 'Puntuación Total'}</p>
-                            <p className="text-3xl font-bold text-gray-800">{totalScore} <span className="text-sm font-normal text-gray-400">pts</span></p>
-                        </div>
-                    </div>
-
-                    <div className="mb-2">
-                        <div className="flex justify-between text-sm mb-2 font-medium text-gray-600">
-                            <span>{lang === 'en' ? 'Progress to next level' : 'Progreso al siguiente nivel'}</span>
-                            {nextLevel && <span>{totalScore} / {nextLevel.min}</span>}
-                        </div>
-                        <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500 transition-all duration-1000 ease-out" style={{ width: `${progress}%` }}></div>
-                        </div>
-                        {nextLevel ? (
-                            <p className="text-xs text-gray-400 mt-2 text-center">
-                                {lang === 'en' ? `Need ${nextLevel.min - totalScore} more points for` : `Necesitas ${nextLevel.min - totalScore} puntos más para`} <span className="font-bold">{lang === 'en' ? nextLevel.name_en : nextLevel.name_es}</span>
-                            </p>
-                        ) : (
-                            <p className="text-xs text-green-600 mt-2 text-center font-bold">
-                                {lang === 'en' ? 'Max level reached!' : '¡Nivel máximo alcanzado!'}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-800 mb-4">{lang === 'en' ? 'Exam History' : 'Historial de Exámenes'}</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-                {Object.keys(examsData).map(key => {
-                    const exam = examsData[key];
-                    const s = scores[key] || {};
-                    const total = Object.values(s).reduce((a,b)=>a+Number(b),0);
-                    
-                    return (
-                        <div key={key} className="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${total > 0 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                                    <Trophy size={20} />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-gray-800">{lang === 'en' ? exam.title_en : exam.title_es}</h4>
-                                    <p className="text-xs text-gray-500">{total > 0 ? (lang === 'en' ? 'In Progress' : 'En Progreso') : (lang === 'en' ? 'Not Started' : 'No Iniciado')}</p>
-                                </div>
-                            </div>
-                            <span className="text-xl font-bold text-gray-800">{total}</span>
-                        </div>
-                    )
-                })}
-            </div>
-        </div>
-    );
-};
-
-// --- MAIN APP CONTROLLER ---
-
-const Header = ({ lang, setLang, goHome, onProfileClick, user, onLogout }) => (
-    <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-50 border-b border-gray-800">
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}>
-            <div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200">
-                <Target className="text-white w-7 h-7" />
-            </div>
-            <div className="hidden sm:block">
-                <h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p>
-            </div>
-        </div>
-        <div className="flex gap-3 items-center">
-            {user && (
-                <>
-                <button 
-                    onClick={onProfileClick}
-                    className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white pl-2 pr-4 py-1.5 rounded-full transition text-sm border border-gray-700 shadow-sm group"
-                >
-                    <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold group-hover:bg-indigo-400 transition-colors">
-                        {user.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-medium hidden sm:inline">{user}</span>
-                </button>
-                <button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition">
-                    <LogOut size={20} />
-                </button>
-                </>
-            )}
-            <button 
-                onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
-                className="flex items-center gap-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold transition border border-gray-700 ml-1 text-gray-300"
-            >
-                <Globe size={14} />
-                {lang === 'en' ? 'ES' : 'EN'}
-            </button>
-        </div>
-    </header>
-);
-
-const ExamCard = ({ exam, lang, onSelect }) => (
-    <div 
-        onClick={() => onSelect(exam)}
-        className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"
-    >
-        <div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div>
-        <div className="flex items-center gap-4 mb-4 relative z-10">
-            <div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">
-                {exam.id === 'I' && <RotateCcw size={28} />}
-                {exam.id === 'II' && <Shield size={28} />}
-                {exam.id === 'III' && <Trophy size={28} />}
-                {['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}
-            </div>
-            <h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{lang === 'en' ? exam.title_en : exam.title_es}</h2>
-        </div>
-        <p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{lang === 'en' ? exam.desc_en : exam.desc_es}</p>
-        <div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">
-            {lang === 'en' ? 'Start Assessment' : 'Iniciar Evaluación'} <ChevronLeft className="rotate-180 w-4 h-4" />
-        </div>
-    </div>
-);
-
-const Glossary = ({ lang, goBack }) => {
-    const [search, setSearch] = useState("");
+    <!-- React & ReactDOM (Production) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    const filteredTerms = glossaryTerms.filter(t => 
-        t.term.toLowerCase().includes(search.toLowerCase()) || 
-        t.def_en.toLowerCase().includes(search.toLowerCase()) ||
-        t.def_es.toLowerCase().includes(search.toLowerCase())
-    );
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    return (
-        <div className="max-w-3xl mx-auto p-4">
-            <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6 transition">
-                <ChevronLeft size={20} /> {lang === 'en' ? 'Back to Menu' : 'Volver al Menú'}
-            </button>
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3 text-gray-900">
-                <BookOpen className="text-blue-600" />
-                {lang === 'en' ? 'Billiard Glossary' : 'Glosario de Billar'}
-            </h2>
-            <input 
-                type="text" 
-                placeholder={lang === 'en' ? "Search terms (e.g. Stun, Draw)..." : "Buscar términos (ej. Stun, Retroceso)..."}
-                className="w-full p-4 pl-12 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
-            <div className="grid gap-4">
-                {filteredTerms.map((item, idx) => (
-                    <div key={idx} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="font-bold text-xl text-blue-900 mb-2">{item.term}</h3>
-                        <div className="space-y-1">
-                            <p className="text-gray-600 text-sm"><strong className="text-xs uppercase tracking-wide text-gray-400 w-6 inline-block">EN:</strong> {item.def_en}</p>
-                            <p className="text-gray-600 text-sm"><strong className="text-xs uppercase tracking-wide text-gray-400 w-6 inline-block">ES:</strong> {item.def_es}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-in-fade { animation: fadeIn 0.2s ease-out; }
+        .animate-in-zoom { animation: zoomIn 0.2s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-// --- MODAL LAYOUT FOR EXAM DETAIL ---
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
 
-const ExamDetail = ({ exam, lang, onBack, user, scores, updateScore }) => {
-    const [activeDrill, setActiveDrill] = useState(null);
-    const [level, setLevel] = useState("Bachelors");
+        // --- ICONOS INTEGRADOS (SVG) PARA EVITAR ERRORES DE LIBRERÍA EXTERNA ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+        );
+        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
+        const Trophy = (p) => <IconBase {...p}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>;
+        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
+        const BookOpen = (p) => <IconBase {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>;
+        const RotateCcw = (p) => <IconBase {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
+        const ChevronLeft = (p) => <IconBase {...p}><path d="m15 18-6-6 6-6"/></IconBase>;
+        const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
+        const Info = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>;
+        const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></IconBase>;
+        const Save = (p) => <IconBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>;
+        const Trash2 = (p) => <IconBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconBase>;
+        const ExternalLink = (p) => <IconBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>;
+        const AlertCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconBase>;
+        const Plus = (p) => <IconBase {...p}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></IconBase>;
+        const Minus = (p) => <IconBase {...p}><line x1="5" x2="19" y1="12" y2="12"/></IconBase>;
+        const User = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
+        const LogOut = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></IconBase>;
+        const Hash = (p) => <IconBase {...p}><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></IconBase>;
+        const X = (p) => <IconBase {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
+        const GraduationCap = (p) => <IconBase {...p}><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></IconBase>;
 
-    const currentDrills = useMemo(() => {
-        if (exam.id !== 'II') return exam.drills;
-        return exam.drills; 
-    }, [exam, level]);
+        // --- CONFIGURACIÓN ---
+        const PDF_RAW_URL = "https://github.com/juanmiguel0927/ExamenPool/raw/5eae9e124ba5a7b3353ea766ce4533d87b00b94a/All.pdf";
+        
+        const getPdfViewerUrl = (url) => {
+            return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+        };
 
-    return (
-        <div className="max-w-5xl mx-auto p-6 pb-24">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition shadow-sm">
-                        <ChevronLeft size={24} />
-                    </button>
-                    <div>
-                        <h2 className="text-3xl font-black text-gray-900">{lang === 'en' ? exam.title_en : exam.title_es}</h2>
-                        <p className="text-gray-500">{lang === 'en' ? exam.desc_en : exam.desc_es}</p>
-                    </div>
-                </div>
-                {exam.id === 'II' && (
-                    <div className="flex bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">
-                        {['Bachelors', 'Masters', 'Doctorate'].map(l => (
-                            <button 
-                                key={l}
-                                onClick={() => setLevel(l)}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${level === l ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
-                            >
-                                {lang === 'es' && l === 'Bachelors' ? 'Licenciatura' : 
-                                 lang === 'es' && l === 'Masters' ? 'Maestría' : 
-                                 lang === 'es' && l === 'Doctorate' ? 'Doctorado' : l}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
+        const LEVELS = [
+            { name_es: "Novato", min: 0, color: "text-gray-500", bg: "bg-gray-100" },
+            { name_es: "Principiante", min: 50, color: "text-green-500", bg: "bg-green-100" },
+            { name_es: "Aficionado", min: 100, color: "text-blue-500", bg: "bg-blue-100" },
+            { name_es: "Intermedio", min: 150, color: "text-indigo-500", bg: "bg-indigo-100" },
+            { name_es: "Avanzado", min: 200, color: "text-purple-500", bg: "bg-purple-100" },
+            { name_es: "Semiprofesional", min: 250, color: "text-orange-500", bg: "bg-orange-100" },
+            { name_es: "Maestro", min: 300, color: "text-red-600", bg: "bg-red-100" },
+            { name_es: "Leyenda", min: 350, color: "text-yellow-600", bg: "bg-yellow-100" }
+        ];
 
-            {/* Drill Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {currentDrills.map((drill) => {
-                    const currentScore = scores[exam.id] ? (scores[exam.id][drill.id] || 0) : 0;
-                    return (
-                        <div 
-                            key={drill.id} 
-                            onClick={() => setActiveDrill(drill)}
-                            className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="bg-gray-100 text-gray-600 font-bold w-10 h-10 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 transition-colors">
-                                    {drill.id}
-                                </div>
-                                {currentScore > 0 && <CheckCircle className="text-green-500" size={20} />}
-                            </div>
-                            <h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-green-700 transition-colors">{lang === 'en' ? drill.name_en : drill.name_es}</h3>
-                            <p className="text-sm text-gray-500 mb-4 line-clamp-2">{lang === 'en' ? drill.desc_en : drill.desc_es}</p>
-                            <div className="flex items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                Score: <span className="text-gray-900 ml-1 text-base">{currentScore}</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+        // --- DATOS ---
+        const glossaryTerms = [
+            { term: "CB (Cue Ball)", def_en: "The white ball struck by the cue.", def_es: "Bola Blanca (Mingo). La bola blanca golpeada por el taco." },
+            { term: "OB (Object Ball)", def_en: "The ball the cue ball strikes.", def_es: "Bola Objetivo. La bola a la que golpea la bola blanca." },
+            { term: "BIH (Ball In Hand)", def_en: "Player can place the cue ball anywhere on the table.", def_es: "Bola en Mano. El jugador puede colocar la bola blanca en cualquier lugar de la mesa." },
+            { term: "Cut Shot", def_en: "A shot where the CB strikes the OB at an angle.", def_es: "Tiro de Corte / Fina. Un tiro donde la blanca golpea la objetivo en ángulo." },
+            { term: "Stop Shot", def_en: "The CB stops immediately after contacting the OB.", def_es: "Tiro de Stop / Clavada. La blanca se detiene inmediatamente tras el impacto." },
+            { term: "Follow Shot", def_en: "The CB continues forward after contact (top spin).", def_es: "Tiro Corrido / Follow. La blanca sigue hacia adelante (efecto arriba)." },
+            { term: "Draw Shot", def_en: "The CB spins backwards after contact (back spin).", def_es: "Tiro de Retroceso / Draw / Jalar. La blanca retrocede (efecto abajo)." },
+            { term: "Stun Shot", def_en: "The CB slides into the OB with no forward/backward roll.", def_es: "Tiro Seco / Stun. La blanca golpea deslizando sin rotación, saliendo en la línea tangente." },
+            { term: "Ghost Ball", def_en: "Imaginary position of the CB at the moment of impact.", def_es: "Bola Fantasma. Posición imaginaria de la blanca en el momento del impacto." },
+            { term: "Rail / Cushion", def_en: "The padded sides of the table.", def_es: "Banda. Los lados acolchados de la mesa." },
+            { term: "Scratch", def_en: "Pocketing the Cue Ball (foul).", def_es: "Suicidio / Mingo / Falta. Embocar la bola blanca." },
+            { term: "Diamond", def_en: "Markers on the rails used for aiming.", def_es: "Diamante. Marcadores en las bandas usados para apuntar." },
+            { term: "Safety", def_en: "Defensive shot aiming to leave the opponent difficult.", def_es: "Defensa. Tiro defensivo para dejar al oponente en una situación difícil." },
+            { term: "Bank Shot", def_en: "Driving an OB into a rail to pocket it.", def_es: "Tiro de Banda / Doblete. Golpear una bola objetivo contra una banda para embocarla." },
+            { term: "Kick Shot", def_en: "Driving the CB into a rail to hit an OB.", def_es: "Tiro de Retruque / Bricol. Golpear la blanca contra una banda antes de dar a la objetivo." },
+            { term: "Masse", def_en: "Curving the CB path using extreme elevation and spin.", def_es: "Massé. Curvar la trayectoria de la blanca usando elevación y efecto." }
+        ];
 
-            {/* MODAL OVERLAY */}
-            {activeDrill && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-200">
-                        {/* Close Button */}
-                        <button 
-                            onClick={() => setActiveDrill(null)}
-                            className="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition"
-                        >
-                            <X size={24} />
-                        </button>
-
-                        {/* LEFT COLUMN: PDF VIEWER */}
-                        <div className="w-full md:w-2/3 bg-gray-100 border-r border-gray-200 relative">
-                             <div className="absolute top-0 left-0 w-full bg-white/90 backdrop-blur px-4 py-2 border-b border-gray-200 flex justify-between items-center z-10">
-                                <div className="flex items-center gap-2 text-sm font-bold text-gray-600">
-                                    <BookOpen size={16} /> 
-                                    {lang === 'en' ? 'Exercise Diagram' : 'Diagrama del Ejercicio'}
-                                </div>
-                                <span className="text-xs bg-gray-200 px-2 py-1 rounded text-gray-600 font-mono">Page {activeDrill.pdf_page}</span>
-                             </div>
-                             {activeDrill.pdf_page && (
-                                <iframe 
-                                    src={`${PDF_URL}#page=${activeDrill.pdf_page}&toolbar=0&view=FitH`}
-                                    className="w-full h-full"
-                                    title="Drill Diagram"
-                                />
-                             )}
-                        </div>
-
-                        {/* RIGHT COLUMN: SCORING CONTROLS */}
-                        <div className="w-full md:w-1/3 bg-white flex flex-col">
-                            <div className="p-6 flex-grow overflow-y-auto">
-                                <div className="mb-6">
-                                    <h3 className="text-2xl font-black text-gray-900 leading-tight mb-2">{lang === 'en' ? activeDrill.name_en : activeDrill.name_es}</h3>
-                                    <p className="text-gray-500 text-sm">{lang === 'en' ? activeDrill.desc_en : activeDrill.desc_es}</p>
-                                </div>
-
-                                <ScoringPanel 
-                                    drill={activeDrill} 
-                                    score={scores[exam.id] ? (scores[exam.id][activeDrill.id] || 0) : 0}
-                                    onScoreChange={(val) => updateScore(exam.id, activeDrill.id, val)}
-                                    lang={lang}
-                                    level={level}
-                                    onClose={() => setActiveDrill(null)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-const App = () => {
-    const [lang, setLang] = useState('es'); 
-    const [user, setUser] = useState(localStorage.getItem('bu_current_user') || null);
-    const [view, setView] = useState(user ? 'home' : 'login'); 
-    const [selectedExam, setSelectedExam] = useState(null);
-    const [allScores, setAllScores] = useState({});
-
-    useEffect(() => {
-        if (user) {
-            const saved = localStorage.getItem(`bu_scores_${user}`);
-            setAllScores(saved ? JSON.parse(saved) : {});
-            setView('home');
-        } else {
-            setView('login');
-        }
-    }, [user]);
-
-    const handleLogin = (username) => {
-        localStorage.setItem('bu_current_user', username);
-        setUser(username);
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('bu_current_user');
-        setUser(null);
-        setAllScores({});
-        setView('login');
-    };
-
-    const updateScore = (examId, drillId, val) => {
-        const newScores = {
-            ...allScores,
-            [examId]: {
-                ...(allScores[examId] || {}),
-                [drillId]: val
+        const examsData = {
+            I: {
+                id: "I",
+                title: "Examen I - Fundamentos",
+                desc: "Ejercicios progresivos para evaluar postura, golpe y control básico.",
+                drills: [
+                    { id: "F1", name: "Tiro de Corte", desc: "Práctica progresiva. 10 tiros total.", max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive' },
+                    { id: "F2", name: "Tiro de Stop", desc: "Detener CB en zona fantasma.", max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive' },
+                    { id: "F3", name: "Tiro Corrido", desc: "Seguir a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive' },
+                    { id: "F4", name: "Tiro de Retroceso", desc: "Retroceder a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive' },
+                    { id: "F5", name: "Tiro Seco (Stun)", desc: "Control de stun a objetivos.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' },
+                    { id: "F6", name: "Embocar Bolas", desc: "Sin tocar bandas innecesarias.", max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count' },
+                    { id: "F7", name: "Rueda de Carreta", desc: "Control de dirección tras impacto.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' },
+                    { id: "F8", name: "Objetivo en Rejilla", desc: "Posición precisa en la mesa.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' }
+                ]
+            },
+            II: {
+                id: "II",
+                title: "Examen II - Habilidades",
+                desc: "Situaciones reales de juego por nivel.",
+                drills: [
+                    { id: "S1", name: "Línea de Bolas", max_score: {Bachelors: 4, Masters: 7, Doctorate: 10}, total_shots: 2, scoringType: 'best_of', pdf_page: 9 },
+                    { id: "S2", name: "Corte de Banda", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: 2, scoringType: 'best_of', pdf_page: 10 },
+                    { id: "S3", name: "Patrones Bola 9", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', pdf_page: 11 },
+                    { id: "S4", name: "Patrones Bola 8", max_score: 10, total_shots: 3, scoringType: 'sum_lowest', pdf_page: 14 },
+                    { id: "S5", name: "Defensas", max_score: {Bachelors: 6, Masters: 10, Doctorate: 14}, total_shots: {Bachelors: 6, Masters: 10, Doctorate: 14}, scoringType: 'count', pdf_page: 17 },
+                    { id: "S6", name: "Tiro de Retruque", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: 18 },
+                    { id: "S7", name: "Tiro de Banda", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: 19 },
+                    { id: "S8", name: "Tiro Elevado", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: 20 },
+                    { id: "S9", name: "Salto o Massé", max_score: {Bachelors: 3, Masters: 5, Doctorate: 7}, total_shots: {Bachelors: 3, Masters: 5, Doctorate: 7}, scoringType: 'count', pdf_page: 21 },
+                    { id: "S10", name: "Saque", max_score: 5, total_shots: 3, scoringType: 'median', pdf_page: 22 }
+                ]
+            },
+            III: {
+                id: "III",
+                title: "Examen III - Tiros Avanzados",
+                desc: "25 tiros específicos avanzados.",
+                drills: Array.from({length: 25}, (_, i) => ({
+                    id: `A${i+1}`, 
+                    name: `Tiro A${i+1}`,
+                    desc: "Ver PDF para diagrama específico.",
+                    max_score: 4,
+                    total_shots: 3,
+                    scoringType: 'weighted',
+                    pdf_page: 51 + Math.floor(i/2) 
+                }))
+            },
+            IV: {
+                id: "IV",
+                title: "RDS - Sistema de Limpieza",
+                desc: "16 Niveles de limpieza de mesa.",
+                drills: Array.from({length: 16}, (_, i) => ({
+                    id: `L${i+1}`, 
+                    name: `Nivel ${i+1}`,
+                    desc: i < 5 ? "X bolas, Cualquier Orden." : "Reglas complejas.",
+                    max_score: 100,
+                    total_shots: 1,
+                    scoringType: 'pass_fail',
+                    pdf_page: 65 + Math.floor(i/4)
+                }))
+            },
+            V: {
+                id: "V",
+                title: "PPC - Desafío de Colocación",
+                desc: "18 Configuraciones consecutivas.",
+                drills: [
+                    { id: "PPC", name: "Desafío Completo", desc: "Jugar las 18 configuraciones.", max_score: 100, total_shots: 18, scoringType: 'deduction', pdf_page: 68}
+                ]
+            },
+            VI: {
+                id: "VI",
+                title: "Desafío de Seguridad",
+                desc: "20 Tiros defensivos.",
+                drills: Array.from({length: 20}, (_, i) => ({
+                    id: `Safe${i+1}`, 
+                    name: `Defensa ${i+1}`,
+                    desc: "Ejecutar tiro defensivo.",
+                    max_score: 1,
+                    total_shots: 1,
+                    scoringType: 'count',
+                    pdf_page: 78 + Math.floor(i/2)
+                }))
             }
         };
-        setAllScores(newScores);
-        localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores));
-    };
 
-    const handleExamSelect = (exam) => {
-        setSelectedExam(exam);
-        setView('exam');
-    };
+        // --- COMPONENTES DE PUNTUACIÓN ---
 
-    const goHome = () => {
-        setSelectedExam(null);
-        setView('home');
-    };
+        const ScoringPanel = ({ drill, score, onScoreChange, lang, level, onClose }) => {
+            const currentScore = Number(score) || 0;
 
-    if (!user) {
-        return <LoginScreen onLogin={handleLogin} lang={lang} />;
-    }
-
-    return (
-        <div className="min-h-screen flex flex-col bg-gray-100 font-sans text-gray-900">
-            <Header 
-                lang={lang} 
-                setLang={setLang} 
-                goHome={goHome} 
-                onProfileClick={() => setView('profile')} 
-                user={user}
-                onLogout={handleLogout}
-            />
+            let totalShots = drill.total_shots;
+            if (typeof totalShots === 'object' && totalShots !== null) {
+                totalShots = totalShots[level] || 10;
+            }
             
-            <main className="flex-grow">
-                {view === 'home' && (
-                    <div className="max-w-5xl mx-auto p-6">
-                        <div className="text-center mb-12 mt-8">
-                            <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">
-                                {lang === 'en' ? 'MASTER SHOT' : 'TIRO MAESTRO'}
-                            </h1>
-                            <p className="text-xl text-gray-500 max-w-2xl mx-auto font-light">
-                                {lang === 'en' 
-                                    ? 'Professional Billiard Assessment & Training Tool' 
-                                    : 'Herramienta Profesional de Entrenamiento y Evaluación de Billar'}
-                            </p>
-                        </div>
+            let maxScore = drill.max_score;
+            if (typeof maxScore === 'object' && maxScore !== null) {
+                maxScore = maxScore[level] || 10;
+            }
 
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-                            {Object.values(examsData).map(exam => (
-                                <ExamCard key={exam.id} exam={exam} lang={lang} onSelect={handleExamSelect} />
-                            ))}
-                        </div>
+            const isProgressive = drill.scoringType === 'progressive';
 
-                        <div className="flex justify-center">
-                            <button 
-                                onClick={() => setView('glossary')}
-                                className="flex items-center gap-3 text-gray-600 hover:text-blue-600 font-bold transition px-8 py-4 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-200"
-                            >
-                                <BookOpen size={24} className="text-blue-500" />
-                                {lang === 'en' ? 'Access Terminology Glossary' : 'Acceder al Glosario de Términos'}
-                            </button>
+            // 1. PROGRESSIVE (F1-F5)
+            if (isProgressive) {
+                const [pos, setPos] = useState(0);
+                const [bonus, setBonus] = useState(0);
+
+                useEffect(() => {
+                    if (currentScore > 0) {
+                         if (currentScore <= 7) { setPos(currentScore); setBonus(0); }
+                         else { setPos(7); setBonus(currentScore - 7); }
+                    }
+                }, []);
+
+                const update = (newPos, newBonus) => {
+                    const p = Math.min(7, Math.max(0, newPos));
+                    const b = Math.max(0, newBonus);
+                    setPos(p);
+                    setBonus(b);
+                    onScoreChange(p + b);
+                };
+
+                return (
+                    <div className="flex flex-col h-full p-6">
+                        <div className="mb-6 text-center">
+                            <h3 className="text-xl font-black text-gray-800">{drill.name}</h3>
+                            <p className="text-sm text-gray-500">Práctica Progresiva</p>
+                        </div>
+                        <div className="flex-grow flex flex-col gap-6 justify-center">
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-bold text-blue-900">POSICIÓN FINAL (1-7)</span>
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={() => update(pos - 1, bonus)} className="p-2 bg-white rounded-lg shadow text-blue-600"><Minus size={20}/></button>
+                                        <span className="text-3xl font-black w-12 text-center">{pos}</span>
+                                        <button onClick={() => update(pos + 1, bonus)} className="p-2 bg-white rounded-lg shadow text-blue-600"><Plus size={20}/></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-bold text-green-900">BONO (ÉXITOS EN 7)</span>
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={() => update(pos, bonus - 1)} className="p-2 bg-white rounded-lg shadow text-green-600"><Minus size={20}/></button>
+                                        <span className="text-3xl font-black w-12 text-center">{bonus}</span>
+                                        <button onClick={() => update(pos, bonus + 1)} className="p-2 bg-white rounded-lg shadow text-green-600"><Plus size={20}/></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div className="mt-auto pt-6">
+                            <div className="text-center mb-4">
+                                <span className="text-4xl font-black text-gray-800">{pos + bonus}</span>
+                                <span className="text-sm text-gray-400 uppercase font-bold block">Puntuación Total</span>
+                            </div>
+                            <button onClick={onClose} className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-4 rounded-lg shadow-lg transition uppercase tracking-widest text-sm">Guardar Progreso y Salir</button>
                         </div>
                     </div>
-                )}
+                );
+            }
 
-                {view === 'profile' && (
-                    <UserProfile user={user} scores={allScores} lang={lang} goBack={goHome} />
-                )}
-
-                {view === 'exam' && selectedExam && (
-                    <ExamDetail 
-                        exam={selectedExam} 
-                        lang={lang} 
-                        onBack={goHome} 
-                        user={user}
-                        scores={allScores}
-                        updateScore={updateScore}
-                    />
-                )}
-
-                {view === 'glossary' && (
-                    <Glossary lang={lang} goBack={goHome} />
-                )}
-            </main>
-            
-            <footer className="bg-white border-t border-gray-200 p-8 text-center">
-                <div className="max-w-2xl mx-auto">
-                    <div className="flex justify-center items-center gap-2 mb-4 text-gray-400">
-                        <GraduationCap size={24} />
+            // 2. STANDARD COUNT (Hit/Miss)
+            return (
+                <div className="flex flex-col h-full p-8 items-center justify-between">
+                    <div className="text-center w-full">
+                        <h2 className="text-lg font-bold text-gray-900 mb-2">{drill.id} - {drill.name}</h2>
+                        <div className="inline-block px-4 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-500 mb-8">
+                            Mejor Puntuación: {currentScore} / {maxScore}
+                        </div>
+                        
+                        <div className="text-5xl font-black text-blue-600 mb-2 tracking-tighter">
+                            {currentScore} <span className="text-3xl text-gray-400 font-medium">/ {totalShots}</span>
+                        </div>
+                        <div className="text-xl font-bold text-gray-400 mb-12">
+                            Aciertos / Intentos
+                        </div>
                     </div>
-                    <p className="text-sm text-gray-500 mb-2 font-medium">
-                        &copy; 2025 Tiro Maestro (Master Shot) App
-                    </p>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                        Based on the curriculum designed by <strong className="text-gray-600">Dr. Dave Alciatore</strong>. 
-                        <br />
-                        For more educational resources, please visit the official website:
-                    </p>
-                    <a 
-                        href="https://billiarduniversity.org/" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold mt-3 text-sm hover:underline"
+
+                    <div className="flex gap-4 w-full max-w-md mb-8">
+                        <button 
+                            onClick={() => onScoreChange(Math.max(0, currentScore - 1))}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold text-xl py-5 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center"
+                        >
+                            Fallo
+                        </button>
+                        <button 
+                            onClick={() => onScoreChange(Math.min(maxScore, currentScore + 1))}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-5 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center"
+                        >
+                            Acierto
+                        </button>
+                    </div>
+
+                    <button 
+                        onClick={onClose}
+                        className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition shadow-md text-sm uppercase tracking-wider"
                     >
-                        billiarduniversity.org <ExternalLink size={12} />
-                    </a>
+                        Guardar Progreso y Salir
+                    </button>
                 </div>
-            </footer>
-        </div>
-    );
-};
+            );
+        };
 
-export default App;
+        const PracticeModal = ({ drill, score, onScoreChange, onClose, level }) => {
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
+                    <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in-zoom">
+                        <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
+
+                        {/* IZQUIERDA: VISOR PDF */}
+                        <div className="w-full md:w-2/3 bg-gray-100 border-r border-gray-200 relative flex flex-col">
+                             <div className="absolute top-0 left-0 w-full bg-white/90 backdrop-blur px-4 py-3 border-b border-gray-200 flex justify-between items-center z-10 shadow-sm">
+                                <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                                    <BookOpen size={18} className="text-blue-600" /> 
+                                    Diagrama del Ejercicio
+                                </div>
+                                <span className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-mono font-bold border border-yellow-200">Página {drill.pdf_page}</span>
+                             </div>
+                             <iframe 
+                                src={getPdfViewerUrl(PDF_RAW_URL)}
+                                className="w-full h-full border-none bg-gray-50"
+                                title="Diagrama del Ejercicio"
+                            ></iframe>
+                        </div>
+
+                        {/* DERECHA: PUNTUACIÓN */}
+                        <div className="w-full md:w-1/3 bg-white flex flex-col relative z-20">
+                             <div className="absolute top-2 right-2 hidden md:block">
+                                <button onClick={onClose} className="text-gray-400 hover:text-gray-800 p-2 transition"><X size={24} /></button>
+                             </div>
+                            <ScoringPanel 
+                                drill={drill} 
+                                score={score} 
+                                onScoreChange={onScoreChange}
+                                level={level}
+                                onClose={onClose}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- COMPONENTES UI ---
+        
+        const ExamCard = ({ exam, onSelect }) => (
+            <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div>
+                <div className="flex items-center gap-4 mb-4 relative z-10">
+                    <div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">
+                        {exam.id === 'I' && <RotateCcw size={28} />}
+                        {exam.id === 'II' && <Shield size={28} />}
+                        {exam.id === 'III' && <Trophy size={28} />}
+                        {['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2>
+                </div>
+                <p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p>
+                <div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">
+                    Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" />
+                </div>
+            </div>
+        );
+
+        const ExamDetail = ({ exam, onBack, user, scores, updateScore }) => {
+            const [activeDrill, setActiveDrill] = useState(null);
+            const [level, setLevel] = useState("Bachelors");
+
+            const currentDrills = useMemo(() => {
+                if (exam.id !== 'II') return exam.drills;
+                return exam.drills; 
+            }, [exam, level]);
+
+            return (
+                <div className="max-w-6xl mx-auto p-6 pb-24">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                        <div className="flex items-center gap-4">
+                            <button onClick={onBack} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition shadow-sm"><ChevronLeft size={24} /></button>
+                            <div>
+                                <h2 className="text-3xl font-black text-gray-900">{exam.title}</h2>
+                                <p className="text-gray-500">{exam.desc}</p>
+                            </div>
+                        </div>
+                        {exam.id === 'II' && (
+                            <div className="flex bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm self-start md:self-auto">
+                                {['Bachelors', 'Masters', 'Doctorate'].map(l => (
+                                    <button key={l} onClick={() => setLevel(l)} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${level === l ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                                        {l === 'Bachelors' ? 'Licenciatura' : l === 'Masters' ? 'Maestría' : 'Doctorado'}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {currentDrills.map((drill) => {
+                            const currentScore = scores[exam.id] ? (scores[exam.id][drill.id] || 0) : 0;
+                            let maxDisplay = drill.max_score;
+                            if(typeof maxDisplay === 'object') maxDisplay = maxDisplay[level] || 10;
+
+                            return (
+                                <div key={drill.id} onClick={() => setActiveDrill(drill)} className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="bg-gray-100 text-gray-600 font-bold w-12 h-12 rounded-lg flex items-center justify-center group-hover:bg-green-100 group-hover:text-green-700 transition-colors text-lg">{drill.id}</div>
+                                        {currentScore > 0 && <CheckCircle className="text-green-500" size={24} />}
+                                    </div>
+                                    <h3 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-green-700 transition-colors relative z-10">{drill.name}</h3>
+                                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 relative z-10">{drill.desc}</p>
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                                        <div className="bg-green-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${(currentScore / maxDisplay) * 100}%` }}></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {activeDrill && (
+                        <PracticeModal 
+                            drill={activeDrill}
+                            score={scores[exam.id] ? (scores[exam.id][activeDrill.id] || 0) : 0}
+                            onScoreChange={(val) => updateScore(exam.id, activeDrill.id, val)}
+                            onClose={() => setActiveDrill(null)}
+                            level={level}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const LoginScreen = ({ onLogin }) => {
+            const [username, setUsername] = useState("");
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+                    <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
+                        <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"><Target className="text-white w-8 h-8" /></div>
+                        <h1 className="text-2xl font-extrabold text-gray-800 mb-2">TIRO MAESTRO</h1>
+                        <p className="text-gray-500 mb-6">Ingresa tu nombre para guardar tu progreso</p>
+                        <form onSubmit={(e) => { e.preventDefault(); if(username.trim()) onLogin(username.trim()); }}>
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tu Nombre" className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-green-500 focus:outline-none" autoFocus />
+                            <button type="submit" disabled={!username.trim()} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition shadow-md disabled:opacity-50">Comenzar Entrenamiento</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const UserProfile = ({ user, scores, goBack }) => {
+            const totalScore = useMemo(() => {
+                let sum = 0;
+                Object.keys(examsData).forEach(examKey => {
+                    const examScores = scores[examKey] || {};
+                    Object.values(examScores).forEach(val => sum += Number(val) || 0);
+                });
+                return sum;
+            }, [scores]);
+            const currentLevel = [...LEVELS].reverse().find(l => totalScore >= l.min) || LEVELS[0];
+            return (
+                <div className="max-w-4xl mx-auto p-4">
+                    <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6"><ChevronLeft size={20} /> Volver</button>
+                    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 p-6">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-16 h-16 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl font-bold">{user.charAt(0).toUpperCase()}</div>
+                            <div><h2 className="text-2xl font-bold">{user}</h2><p className="text-gray-500">Puntos Totales: <span className="font-bold text-gray-900">{totalScore}</span></p></div>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">
+                            <span className="text-sm font-bold text-gray-400 uppercase">Nivel Actual</span>
+                            <h3 className={`text-3xl font-black ${currentLevel.color}`}>{currentLevel.name_es}</h3>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Header = ({ goHome, onProfileClick, user, onLogout }) => (
+            <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800">
+                <div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}>
+                    <div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200">
+                        <Target className="text-white w-7 h-7" />
+                    </div>
+                    <div className="hidden sm:block">
+                        <h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p>
+                    </div>
+                </div>
+                <div className="flex gap-3 items-center">
+                    {user && (
+                        <React.Fragment>
+                            <button onClick={onProfileClick} className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white pl-2 pr-4 py-1.5 rounded-full transition text-sm border border-gray-700 shadow-sm group">
+                                <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold group-hover:bg-indigo-400 transition-colors">{user.charAt(0).toUpperCase()}</div>
+                                <span className="font-medium hidden sm:inline">{user}</span>
+                            </button>
+                            <button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition"><LogOut size={20} /></button>
+                        </React.Fragment>
+                    )}
+                </div>
+            </header>
+        );
+
+        const Glossary = ({ goBack }) => {
+            const [search, setSearch] = useState("");
+            return (
+                <div className="max-w-3xl mx-auto p-4">
+                    <button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 mb-6"><ChevronLeft size={20} /> Volver</button>
+                    <h2 className="text-3xl font-bold mb-6 text-gray-900 flex items-center gap-3"><BookOpen className="text-blue-600"/> Glosario de Billar</h2>
+                    <input type="text" placeholder="Buscar términos..." className="w-full p-4 pl-12 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <div className="grid gap-4 mt-6">
+                        {glossaryTerms.filter(t => t.term.toLowerCase().includes(search.toLowerCase()) || t.def_es.toLowerCase().includes(search.toLowerCase())).map((t, i) => (
+                            <div key={i} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                                <h3 className="font-bold text-xl text-blue-900 mb-2">{t.term}</h3>
+                                <p className="text-gray-600 text-sm">{t.def_es}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [user, setUser] = useState(localStorage.getItem('bu_current_user') || null);
+            const [view, setView] = useState(user ? 'home' : 'login'); 
+            const [selectedExam, setSelectedExam] = useState(null);
+            const [allScores, setAllScores] = useState({});
+
+            useEffect(() => {
+                if (user) {
+                    const saved = localStorage.getItem(`bu_scores_${user}`);
+                    setAllScores(saved ? JSON.parse(saved) : {});
+                    setView('home');
+                } else { setView('login'); }
+            }, [user]);
+
+            const handleLogin = (username) => {
+                localStorage.setItem('bu_current_user', username);
+                setUser(username);
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem('bu_current_user');
+                setUser(null);
+                setAllScores({});
+                setView('login');
+            };
+
+            const updateScore = (examId, drillId, val) => {
+                const newScores = { ...allScores, [examId]: { ...(allScores[examId] || {}), [drillId]: val } };
+                setAllScores(newScores);
+                localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores));
+            };
+
+            if (!user) return <LoginScreen onLogin={handleLogin} />;
+
+            return (
+                <div className="min-h-screen flex flex-col bg-gray-100 font-sans text-gray-900">
+                    <Header goHome={() => {setSelectedExam(null); setView('home');}} onProfileClick={() => setView('profile')} user={user} onLogout={handleLogout} />
+                    
+                    <main className="flex-grow">
+                        {view === 'home' && (
+                            <div className="max-w-5xl mx-auto p-6">
+                                <div className="text-center mb-12 mt-8">
+                                    <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">TIRO MAESTRO</h1>
+                                    <p className="text-xl text-gray-500 max-w-2xl mx-auto font-light">Plan de Entrenamiento Profesional</p>
+                                </div>
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                                    {Object.values(examsData).map(exam => (
+                                        <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />
+                                    ))}
+                                </div>
+                                <div className="flex justify-center">
+                                    <button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-600 hover:text-blue-600 font-bold transition px-8 py-4 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md">
+                                        <BookOpen size={24} className="text-blue-500" /> Acceder al Glosario
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} />}
+                        {view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); }} user={user} scores={allScores} updateScore={updateScore} />}
+                        {view === 'glossary' && <Glossary goBack={() => setView('home')} />}
+                    </main>
+                    
+                    <footer className="bg-white border-t border-gray-200 p-8 text-center">
+                        <div className="max-w-2xl mx-auto">
+                            <div className="flex justify-center items-center gap-2 mb-4 text-gray-400"><GraduationCap size={24} /></div>
+                            <p className="text-sm text-gray-500 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p>
+                            <p className="text-xs text-gray-400 leading-relaxed">Basado en el currículo del <strong className="text-gray-600">Dr. Dave Alciatore</strong>.</p>
+                            <a href="https://billiarduniversity.org/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold mt-3 text-sm hover:underline">billiarduniversity.org <ExternalLink size={12} /></a>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
