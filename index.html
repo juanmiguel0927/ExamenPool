@@ -60,7 +60,7 @@
         const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
         // ==========================================
-        // 1. ICONOS
+        // 1. ICONOS (DEFINICIÓN COMPLETA)
         // ==========================================
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
@@ -73,6 +73,8 @@
         const RotateCcw = (p) => <IconBase {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
         const ChevronLeft = (p) => <IconBase {...p}><path d="m15 18-6-6 6-6"/></IconBase>;
         const ChevronRight = (p) => <IconBase {...p}><path d="m9 18 6-6-6-6"/></IconBase>;
+        const ChevronDown = (p) => <IconBase {...p}><path d="m6 9 6 6 6-6"/></IconBase>;
+        const ChevronUp = (p) => <IconBase {...p}><path d="m18 15-6-6-6 6"/></IconBase>;
         const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></IconBase>;
         const Check = (p) => <IconBase {...p}><polyline points="20 6 9 17 4 12"/></IconBase>;
         const X = (p) => <IconBase {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
@@ -94,8 +96,6 @@
         const Video = (p) => <IconBase {...p}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></IconBase>;
         const ZoomIn = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></IconBase>;
         const ZoomOut = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></IconBase>;
-        const ChevronDown = (p) => <IconBase {...p}><path d="m6 9 6 6 6-6"/></IconBase>;
-        const ChevronUp = (p) => <IconBase {...p}><path d="m18 15-6-6-6 6"/></IconBase>;
 
         // ------------------------------------------------------------------
         // 2. CONFIGURACIÓN Y DATOS
@@ -164,6 +164,7 @@
             }
             return drills;
         };
+
         const generatePPCData = () => {
             const drills = [];
             drills.push({ id: "PPC-1", name: "Ejercicio 1", desc: "Layout 1 PPC", pdf_page: 68, max_score: 100, total_shots: 100, scoringType: 'deduction', subDrills: [{ id: "PPC-1", name: "Layout 1", max_score: 100, total_shots: 100, scoringType: 'deduction' }] });
@@ -174,11 +175,12 @@
             drills.push({ id: "PPC-18", name: "Ejercicio 18", desc: "Layout 18 PPC", pdf_page: 77, max_score: 100, total_shots: 100, scoringType: 'deduction', subDrills: [{ id: "PPC-18", name: "Layout 18", max_score: 100, total_shots: 100, scoringType: 'deduction' }] });
             return drills;
         };
+
         const generateExam6Drills = () => {
             const drills = [];
             for (let i = 1; i <= 20; i += 2) {
                 const page = 78 + Math.floor((i - 1) / 2);
-                drills.push({ id: `Safe${i}-${i+1}`, name: `Defensas ${i} y ${i+1}`, desc: "Ejercicios de Seguridad", pdf_page: page, isGroup: true, subDrills: [ { id: `Safe${i}`, name: `Defensa ${i}`, max_score: 1, total_shots: 1, scoringType: 'count' }, { id: `Safe${i+1}`, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count' } ] });
+                drills.push({ id: `Safe${i}-${i+1}`, name: `Defensas ${i} y ${i+1}`, desc: "Ejercicios de Seguridad (Pares).", pdf_page: page, isGroup: true, subDrills: [ { id: `Safe${i}`, name: `Defensa ${i}`, max_score: 1, total_shots: 1, scoringType: 'count' }, { id: `Safe${i+1}`, name: `Defensa ${i+1}`, max_score: 1, total_shots: 1, scoringType: 'count' } ] });
             }
             return drills;
         };
@@ -244,8 +246,6 @@
                         const context = canvas.getContext('2d');
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
-                        
-                        // Simple render cancellation not implemented for brevity, but recommended for prod
                         await pageData.render({ canvasContext: context, viewport }).promise;
                     } catch (e) { console.error(e); }
                 };
@@ -253,11 +253,10 @@
             }, [page, scale]); // Re-render on scale change
 
             return (
-                <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-800">
-                     <div className="flex justify-end gap-2 p-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 z-10">
-                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><ZoomOut size={20} /></button>
-                        <span className="flex items-center text-xs font-mono text-gray-500 w-12 justify-center">{Math.round(scale * 100)}%</span>
-                        <button onClick={() => setScale(s => Math.min(3.0, s + 0.25))} className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><ZoomIn size={20} /></button>
+                <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-800 relative">
+                     <div className="absolute bottom-4 right-4 flex gap-2 z-20">
+                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><ZoomOut size={20} /></button>
+                        <button onClick={() => setScale(s => Math.min(3.0, s + 0.25))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><ZoomIn size={20} /></button>
                     </div>
                     <div className="flex-1 overflow-auto flex justify-center p-4">
                         <canvas ref={canvasRef} className="shadow-lg max-w-none" />
@@ -269,7 +268,6 @@
         // --- ZOOMABLE CHART ---
         const ZoomableChart = ({ data }) => {
             const [zoomLevel, setZoomLevel] = useState(1);
-            
             if (!data || data.length < 2) return <div className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">Practica más días para ver tu progreso</div>;
             
             const containerWidth = 400 * zoomLevel;
@@ -348,7 +346,7 @@
                     newScore = points; newAttempts = 3; 
                 }
                 else if (drill.scoringType === 'deduction') {
-                    // PPC Hit: No deduction
+                    // PPC Hit
                 }
                 else {
                     newScore = Math.min(maxScore, score + 1);
@@ -435,7 +433,7 @@
 
             return (
                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative mb-4">
-                    <button onClick={handleReset} className="absolute top-2 left-2 text-gray-400 hover:text-red-500 p-1"><RotateCcw size={14}/></button>
+                    <button onClick={handleReset} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"><RotateCcw size={14}/></button>
                     <div className="flex justify-between items-center mb-3 pl-8"><div><h4 className="font-bold text-gray-800 dark:text-gray-200">{drill.name}</h4></div><div className="text-xl font-black">{score}</div></div>
                     <div className="flex gap-2 mb-2"><button onClick={handleMiss} disabled={buttonsDisabled} className="flex-1 bg-red-500 text-white py-3 rounded-lg font-bold text-xs shadow disabled:opacity-50">Fallo</button><button onClick={handleHit} disabled={buttonsDisabled} className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold text-xs shadow disabled:opacity-50">Acierto</button></div>
                     <div className="text-xs text-center mt-1 text-gray-500">Intentos: {attempts} / {totalShots}</div>
@@ -476,6 +474,11 @@
                 </div>
             );
         };
+        
+        const Glossary = ({ goBack }) => {
+            const [search, setSearch] = useState("");
+            return (<div className="max-w-3xl mx-auto p-4"><button onClick={goBack} className="flex items-center text-gray-500 dark:text-gray-400 mb-6"><ChevronLeft size={20} /> Volver</button><h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3"><BookOpen className="text-blue-600"/> Glosario de Billar</h2><input type="text" placeholder="Buscar términos..." className="w-full p-4 border rounded-xl shadow-sm mb-6 dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={search} onChange={(e) => setSearch(e.target.value)} /><div className="grid gap-4">{glossaryTerms.filter(t => t.term.toLowerCase().includes(search.toLowerCase()) || t.def_es.toLowerCase().includes(search.toLowerCase())).map((t, i) => <div key={i} className="bg-white dark:bg-gray-800 p-5 rounded-xl border dark:border-gray-700 shadow-sm"><h3 className="font-bold text-xl text-blue-900 dark:text-blue-400">{t.term}</h3><p className="text-gray-600 dark:text-gray-300 text-sm">{t.def_es}</p></div>)}</div></div>);
+        };
 
         const VariationsModal = ({ drill, onClose, onSelectVariation }) => (
              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
@@ -507,26 +510,20 @@
         const ExamCard = ({ exam, onSelect }) => (
             <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"><div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div><div className="flex items-center gap-4 mb-4 relative z-10"><div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">{exam.id === 'I' && <RotateCcw size={28} />}{exam.id === 'II' && <Shield size={28} />}{exam.id === 'III' && <Trophy size={28} />}{['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}</div><h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2></div><p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p><div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" /></div></div>
         );
-        const UserProfile = ({ user, scores, goBack, onExport, onImport, history }) => {
+        const UserProfile = ({ user, scores, goBack, onExport, onImport, history, onDrillSelect }) => {
             const scoreI = Object.values(scores['I'] || {}).reduce((a, b) => a + getSafeScore(b), 0);
             const scoreII = Object.values(scores['II'] || {}).reduce((a, b) => a + getSafeScore(b), 0);
             const buTotal = scoreI + scoreII;
             const buLevel = BU_RATING_LEVELS.slice().reverse().find(l => buTotal >= l.score) || BU_RATING_LEVELS[0];
             const badges = BADGES.filter(b => b.condition(scores));
             const fileInputRef = React.useRef();
-            
-            // Estado para controlar qué tablas están abiertas (Accordion)
             const [openSections, setOpenSections] = useState({});
-            
-            const toggleSection = (key) => {
-                setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
-            };
+            const toggleSection = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
 
             const renderDetailTable = (examKey) => {
                 const exam = examsData[examKey];
                 if(!exam) return null;
                 const isOpen = openSections[examKey];
-
                 let flatDrills = [];
                 if (exam.drills) {
                     exam.drills.forEach(d => {
@@ -540,14 +537,7 @@
                 }
                 return (
                     <div key={examKey} className="mb-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div 
-                            onClick={() => toggleSection(examKey)}
-                            className="p-4 flex justify-between items-center cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                        >
-                            <h5 className="font-bold text-gray-700 dark:text-gray-300">{exam.title}</h5>
-                            <button className="text-gray-500">{isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</button>
-                        </div>
-                        
+                        <div onClick={() => toggleSection(examKey)} className="p-4 flex justify-between items-center cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"><h5 className="font-bold text-gray-700 dark:text-gray-300">{exam.title}</h5><button className="text-gray-500">{isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</button></div>
                         {isOpen && (
                             <div className="overflow-x-auto p-4 border-t border-gray-200 dark:border-gray-700">
                                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -555,22 +545,14 @@
                                     <tbody>
                                         {flatDrills.map(drill => {
                                             const data = scores[examKey] ? (scores[examKey][drill.id] || {score: 0, attempts: 0}) : {score: 0, attempts: 0};
-                                            // Safely extract
                                             const scoreVal = getSafeScore(data);
                                             const attemptsVal = getSafeAttempts(data);
-                                            
                                             const max = drill.max_score || 10;
                                             const percent = (scoreVal / max) * 100;
                                             const misses = attemptsVal > 0 ? attemptsVal - scoreVal : '-';
-                                            
                                             let statusColor = "bg-gray-100 text-gray-800"; let statusText = "Sin Intentar";
-                                            if (attemptsVal > 0) { 
-                                                if (percent === 100) { statusColor = "bg-green-100 text-green-800"; statusText = "Perfecto"; } 
-                                                else if (percent >= 80) { statusColor = "bg-blue-100 text-blue-800"; statusText = "Maestro"; } 
-                                                else if (percent >= 50) { statusColor = "bg-yellow-100 text-yellow-800"; statusText = "Avanzado"; } 
-                                                else { statusColor = "bg-red-100 text-red-800"; statusText = "Aprendiz"; } 
-                                            }
-                                            return (<tr key={drill.id} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"><td className="px-4 py-2 font-medium text-gray-900 dark:text-white">{drill.id}</td><td className="px-4 py-2 text-center font-bold">{scoreVal}</td><td className="px-4 py-2 text-center">{scoreVal}</td><td className="px-4 py-2 text-center text-red-400">{misses}</td><td className="px-4 py-2 text-center"><span className={`${statusColor} text-xs font-medium px-2.5 py-0.5 rounded`}>{statusText}</span></td></tr>);
+                                            if (attemptsVal > 0) { if (percent === 100) { statusColor = "bg-green-100 text-green-800"; statusText = "Perfecto"; } else if (percent >= 80) { statusColor = "bg-blue-100 text-blue-800"; statusText = "Maestro"; } else if (percent >= 50) { statusColor = "bg-yellow-100 text-yellow-800"; statusText = "Avanzado"; } else { statusColor = "bg-red-100 text-red-800"; statusText = "Aprendiz"; } }
+                                            return (<tr key={drill.id} onClick={() => onDrillSelect(exam, drill)} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"><td className="px-4 py-2 font-medium text-gray-900 dark:text-white underline">{drill.id}</td><td className="px-4 py-2 text-center font-bold">{scoreVal}</td><td className="px-4 py-2 text-center">{scoreVal}</td><td className="px-4 py-2 text-center text-red-400">{misses}</td><td className="px-4 py-2 text-center"><span className={`${statusColor} text-xs font-medium px-2.5 py-0.5 rounded`}>{statusText}</span></td></tr>);
                                         })}
                                     </tbody>
                                 </table>
@@ -579,16 +561,24 @@
                     </div>
                 );
             };
-            return (<div className="max-w-4xl mx-auto p-4"><button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6"><ChevronLeft size={20} /> Volver</button><div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 mb-6 p-8 flex flex-col md:flex-row items-center gap-6"><div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-4xl font-bold border-4 border-white dark:border-gray-700 shadow-lg text-white">{user.charAt(0).toUpperCase()}</div><div className="text-center md:text-left flex-1"><h2 className="text-3xl font-bold text-gray-900 dark:text-white">{user}</h2><p className="text-lg text-gray-500">Nivel: <span className="font-bold text-blue-600 dark:text-blue-400">{buLevel.label}</span></p></div><div className="flex gap-2"><button onClick={onExport} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Download size={14}/> Exportar</button><button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Upload size={14}/> Importar</button><input type="file" ref={fileInputRef} onChange={onImport} className="hidden" accept=".json" /></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Trophy className="text-yellow-500" size={18}/> Puntuaciones Actuales</h4><div className="space-y-3"><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen I</span><b>{scoreI}/100</b></div><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen II</span><b>{scoreII}/100</b></div><div className="flex justify-between text-sm pt-1 dark:text-white"><span className="font-bold">Total BU</span><span className="font-black text-green-600 dark:text-green-400 text-lg">{buTotal}</span></div></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><TrendingUp className="text-blue-500" size={18}/> Progreso Histórico</h4><ZoomableChart data={history} /></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6"><div className="flex items-center justify-between mb-4"><h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><BarChart2 className="text-indigo-500" size={18}/> Detalle de Rendimiento</h4></div>{renderDetailTable('I')}{renderDetailTable('II')}{renderDetailTable('III')}{renderDetailTable('IV')}{renderDetailTable('V')}{renderDetailTable('VI')}</div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Target className="text-purple-500" size={18}/> Medallas y Logros</h4><div className="flex flex-wrap gap-4">{badges.length > 0 ? badges.map(b => (<div key={b.id} className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 px-3 py-2 rounded-lg"><b.icon className="text-yellow-600 dark:text-yellow-400" size={20} /><div><p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">{b.name}</p><p className="text-[10px] text-yellow-600 dark:text-yellow-400">{b.desc}</p></div></div>)) : <p className="text-sm text-gray-400 italic">Completa ejercicios para ganar medallas.</p>}</div></div></div>);
+            return (<div className="max-w-4xl mx-auto p-4"><button onClick={goBack} className="flex items-center text-gray-500 hover:text-gray-800 dark:hover:text-white mb-6"><ChevronLeft size={20} /> Volver</button><div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 mb-6 p-8 flex flex-col md:flex-row items-center gap-6"><div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-4xl font-bold border-4 border-white dark:border-gray-700 shadow-lg text-white">{user.charAt(0).toUpperCase()}</div><div className="text-center md:text-left flex-1"><h2 className="text-3xl font-bold text-gray-900 dark:text-white">{user}</h2><p className="text-lg text-gray-500">Nivel: <span className="font-bold text-blue-600 dark:text-blue-400">{buLevel.label}</span></p></div><div className="flex gap-2"><button onClick={onExport} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Download size={14}/> Exportar</button><button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Upload size={14}/> Importar</button><input type="file" ref={fileInputRef} onChange={onImport} className="hidden" accept=".json" /></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Trophy className="text-yellow-500" size={18}/> Puntuaciones Actuales</h4><div className="space-y-3"><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen I</span><b>{scoreI}/100</b></div><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen II</span><b>{scoreII}/100</b></div><div className="flex justify-between text-sm pt-1 dark:text-white"><span className="font-bold">Total BU</span><span className="font-black text-green-600 dark:text-green-400 text-lg">{buTotal}</span></div></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><TrendingUp className="text-blue-500" size={18}/> Progreso Histórico</h4><ZoomableChart data={history} /></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6"><div className="flex items-center justify-between mb-4"><h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><BarChart2 className="text-indigo-500" size={18}/> Detalle de Rendimiento</h4></div>{Object.keys(examsData).map(key => renderDetailTable(key))}</div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Target className="text-purple-500" size={18}/> Medallas y Logros</h4><div className="flex flex-wrap gap-4">{badges.length > 0 ? badges.map(b => (<div key={b.id} className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 px-3 py-2 rounded-lg"><b.icon className="text-yellow-600 dark:text-yellow-400" size={20} /><div><p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">{b.name}</p><p className="text-[10px] text-yellow-600 dark:text-yellow-400">{b.desc}</p></div></div>)) : <p className="text-sm text-gray-400 italic">Completa ejercicios para ganar medallas.</p>}</div></div></div>);
         };
         const Header = ({ goHome, onProfileClick, user, onLogout, resetData, ExtraContent, darkMode, toggleDarkMode }) => (
             <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800"><div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}><div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200"><Target className="text-white w-7 h-7" /></div><div className="hidden sm:block"><h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1><p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p></div></div><div className="flex gap-3 items-center">{ExtraContent}<button onClick={toggleDarkMode} className="p-2 text-gray-400 hover:text-yellow-400 transition">{darkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>{user && <React.Fragment><button onClick={resetData} className="p-2 text-gray-400 hover:text-red-400"><Trash2 size={20}/></button><button onClick={onProfileClick} className="flex items-center gap-2 bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700"><div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">{user.charAt(0).toUpperCase()}</div><span className="font-medium hidden sm:inline text-sm">{user}</span></button><button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400"><LogOut size={20}/></button></React.Fragment>}</div></header>
         );
-        const ExamDetail = ({ exam, onBack, user, scores, updateScore, resetExamScore, notes, saveNote }) => {
-            const [activeDrill, setActiveDrill] = useState(null);
+        const ExamDetail = ({ exam, onBack, user, scores, updateScore, resetExamScore, notes, saveNote, initialActiveDrill }) => {
+            const [activeDrill, setActiveDrill] = useState(initialActiveDrill || null);
             const [selectedVariationDrill, setSelectedVariationDrill] = useState(null);
             const [level, setLevel] = useState("Bachelors");
             const currentDrills = useMemo(() => (exam.id !== 'II' ? exam.drills : exam.drills), [exam, level]);
+            
+            // Si viene un drill inicial desde el historial, lo abrimos
+            useEffect(() => {
+                if (initialActiveDrill) {
+                    setActiveDrill(initialActiveDrill);
+                }
+            }, [initialActiveDrill]);
+
             const handleDrillClick = (drill) => { if (drill.has_variations) setSelectedVariationDrill(drill); else setActiveDrill(drill); };
             const handleResetExam = () => { if(confirm("¿Estás seguro de reiniciar este examen?")) resetExamScore(exam.id); };
             const handleNextDrill = () => { if (!activeDrill) return; const currentIndex = currentDrills.findIndex(d => d.id === activeDrill.id); if (currentIndex >= 0 && currentIndex < currentDrills.length - 1) { const nextDrill = currentDrills[currentIndex + 1]; if (nextDrill.has_variations) { setActiveDrill(null); setSelectedVariationDrill(nextDrill); } else setActiveDrill(nextDrill); } else setActiveDrill(null); };
@@ -618,6 +608,7 @@
             const [user, setUser] = useState(localStorage.getItem('bu_current_user') || null);
             const [view, setView] = useState(user ? 'home' : 'login'); 
             const [selectedExam, setSelectedExam] = useState(null);
+            const [activeDrillFromHistory, setActiveDrillFromHistory] = useState(null);
             const [allScores, setAllScores] = useState({});
             const [notes, setNotes] = useState({});
             const [history, setHistory] = useState([]);
@@ -645,7 +636,6 @@
                     setHistory(savedHistory ? JSON.parse(savedHistory) : []);
                     
                     if(parsedScores) {
-                        // Calculate total score safely
                         let total = 0;
                         Object.values(parsedScores).forEach(exam => {
                             Object.values(exam).forEach(val => {
@@ -667,22 +657,25 @@
 
             const handleLogin = (u) => { localStorage.setItem('bu_current_user', u); setUser(u); };
             const handleLogout = () => { localStorage.removeItem('bu_current_user'); setUser(null); setAllScores({}); setNotes({}); setView('login'); };
-            const updateScore = (eId, dId, score, attempts) => { 
-                const newScores = { ...allScores, [eId]: { ...(allScores[eId] || {}), [dId]: { score, attempts } } }; 
-                setAllScores(newScores); 
-                localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores)); 
-            };
+            const updateScore = (eId, dId, score, attempts) => { const newScores = { ...allScores, [eId]: { ...(allScores[eId] || {}), [dId]: { score, attempts } } }; setAllScores(newScores); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores)); };
             const saveNote = (eId, dId, text) => { const newNotes = { ...notes, [`${eId}-${dId}`]: text }; setNotes(newNotes); localStorage.setItem(`bu_notes_${user}`, JSON.stringify(newNotes)); };
             const handleExport = () => { const data = { user, scores: allScores, notes, history, date: new Date().toISOString() }; const blob = new Blob([JSON.stringify(data)], { type: "application/json" }); const href = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = href; link.download = `bu_data_${user}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
             const handleImport = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const data = JSON.parse(e.target.result); if (confirm(`Importar datos de ${data.user}?`)) { setAllScores(data.scores || {}); setNotes(data.notes || {}); setHistory(data.history || []); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(data.scores || {})); localStorage.setItem(`bu_notes_${user}`, JSON.stringify(data.notes || {})); localStorage.setItem(`bu_history_${user}`, JSON.stringify(data.history || [])); alert("Datos importados."); } } catch (err) { alert("Error."); } }; reader.readAsText(file); };
             const resetExamScore = (eId) => { const ns = { ...allScores }; delete ns[eId]; setAllScores(ns); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(ns)); };
             const resetAllData = () => { if(confirm("¿Borrar todo?")) { setAllScores({}); setNotes({}); localStorage.removeItem(`bu_scores_${user}`); localStorage.removeItem(`bu_notes_${user}`); localStorage.removeItem(`bu_history_${user}`); } };
+
+            // --- NAVEGACIÓN DESDE HISTORIAL ---
+            const handleDrillSelectFromHistory = (exam, drill) => {
+                setSelectedExam(exam);
+                setActiveDrillFromHistory(drill);
+                setView('exam');
+            };
             
             if (!user) return <LoginScreen onLogin={handleLogin} />;
             return (
                 <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
                     <Header goHome={() => {setSelectedExam(null); setView('home');}} onProfileClick={() => setView('profile')} user={user} onLogout={handleLogout} resetData={resetAllData} ExtraContent={<SessionTimer />} darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
-                    <main className="flex-grow">{view === 'home' && <div className="max-w-5xl mx-auto p-6"><div className="text-center mb-12 mt-8"><h1 className="text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">TIRO MAESTRO</h1><p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p></div><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">{Object.values(examsData).map(exam => <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />)}</div><div className="flex justify-center"><button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-blue-600 font-bold transition px-8 py-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md"><BookOpen size={24} className="text-blue-500" /> Acceder al Glosario</button></div></div>}{view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} onExport={handleExport} onImport={handleImport} history={history} />}{view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); }} user={user} scores={allScores} updateScore={updateScore} resetExamScore={resetExamScore} notes={notes} saveNote={saveNote} />}{view === 'glossary' && <Glossary goBack={() => setView('home')} />}</main>
+                    <main className="flex-grow">{view === 'home' && <div className="max-w-5xl mx-auto p-6"><div className="text-center mb-12 mt-8"><h1 className="text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">TIRO MAESTRO</h1><p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p></div><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">{Object.values(examsData).map(exam => <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />)}</div><div className="flex justify-center"><button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-blue-600 font-bold transition px-8 py-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md"><BookOpen size={24} className="text-blue-500" /> Acceder al Glosario</button></div></div>}{view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} onExport={handleExport} onImport={handleImport} history={history} onDrillSelect={handleDrillSelectFromHistory} />}{view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); setActiveDrillFromHistory(null); }} user={user} scores={allScores} updateScore={updateScore} resetExamScore={resetExamScore} notes={notes} saveNote={saveNote} initialActiveDrill={activeDrillFromHistory} />}{view === 'glossary' && <Glossary goBack={() => setView('home')} />}</main>
                     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-8 text-center"><div className="max-w-2xl mx-auto"><div className="flex justify-center items-center gap-2 mb-4 text-gray-400"><GraduationCap size={24} /></div><p className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p><p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">Basado en el currículo del <strong className="text-gray-600 dark:text-gray-300">Dr. Dave Alciatore</strong>.<br/>Desarrollado por <strong className="text-gray-600 dark:text-gray-300">Juan Miguel Rios Redondo</strong>.</p><a href="https://billiarduniversity.org/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold mt-3 text-sm hover:underline">billiarduniversity.org <ExternalLink size={12} /></a></div></footer>
                 </div>
             );
