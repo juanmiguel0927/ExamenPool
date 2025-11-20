@@ -50,21 +50,21 @@
         .animate-in-fade { animation: fadeIn 0.2s ease-out; }
         .animate-in-zoom { animation: zoomIn 0.2s ease-out; }
 
-        /* Animación del Paño: 2 segundos por color con transición suave */
+        /* Animación del Paño: Cambio cada 5s (20s ciclo total) con transición suave */
         @keyframes poolClothCycle {
-            0% { background-color: #15803d; }       /* Verde (Inicio) */
-            20% { background-color: #15803d; }      /* Verde (Pausa) */
-            25% { background-color: #1e40af; }      /* Transición a Azul */
-            45% { background-color: #1e40af; }      /* Azul (Pausa) */
-            50% { background-color: #b91c1c; }      /* Transición a Rojo */
-            70% { background-color: #b91c1c; }      /* Rojo (Pausa) */
-            75% { background-color: #374151; }      /* Transición a Gris */
-            95% { background-color: #374151; }      /* Gris (Pausa) */
-            100% { background-color: #15803d; }     /* Vuelta a Verde */
+            0% { background-color: #15803d; }       /* Verde (0-5s) */
+            20% { background-color: #15803d; }      
+            25% { background-color: #1e40af; }      /* Azul (5-10s) */
+            45% { background-color: #1e40af; }      
+            50% { background-color: #b91c1c; }      /* Rojo (10-15s) */
+            70% { background-color: #b91c1c; }      
+            75% { background-color: #374151; }      /* Gris (15-20s) */
+            95% { background-color: #374151; }      
+            100% { background-color: #15803d; }     
         }
         .animate-bg-pool { 
-            animation: poolClothCycle 8s infinite; 
-            transition: background-color 0.5s ease-in-out; 
+            animation: poolClothCycle 20s infinite; 
+            transition: background-color 2s ease-in-out; 
         }
 
         .pdf-scroll-container { 
@@ -82,6 +82,32 @@
             display: block; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
+
+        /* Estilo Mesa de Billar para Login */
+        .pool-table-frame {
+            background-color: rgba(0,0,0,0.6);
+            border: 20px solid #5D4037; /* Madera oscura */
+            border-radius: 24px;
+            position: relative;
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.8), 
+                0 20px 50px rgba(0,0,0,0.8);
+        }
+        
+        .pool-table-frame::before, .pool-table-frame::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            border: 4px solid #3e2723;
+            z-index: 20;
+        }
+        .pool-table-frame::before { top: -20px; left: -20px; }
+        .pool-table-frame::after { top: -20px; right: -20px; }
+        .pocket-bl { position: absolute; bottom: -20px; left: -20px; width: 40px; height: 40px; background: #1a1a1a; border-radius: 50%; border: 4px solid #3e2723; z-index: 20; }
+        .pocket-br { position: absolute; bottom: -20px; right: -20px; width: 40px; height: 40px; background: #1a1a1a; border-radius: 50%; border: 4px solid #3e2723; z-index: 20; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 text-gray-900 dark:text-gray-100">
@@ -144,21 +170,9 @@
             { score: 185, label: "Profesional (AAA)" }
         ];
 
-        // Helper para obtener puntuación segura
-        const getSafeScore = (data) => {
-            if (typeof data === 'object' && data !== null) {
-                return Number(data.score) || 0;
-            }
-            return Number(data) || 0;
-        };
-
-        // Helper para obtener intentos seguros
-        const getSafeAttempts = (data) => {
-            if (typeof data === 'object' && data !== null) {
-                return Number(data.attempts) || 0;
-            }
-            return 0; 
-        };
+        // Helper Functions
+        const getSafeScore = (data) => { if (typeof data === 'object' && data !== null) { return Number(data.score) || 0; } return Number(data) || 0; };
+        const getSafeAttempts = (data) => { if (typeof data === 'object' && data !== null) { return Number(data.attempts) || 0; } return 0; };
 
         const BADGES = [
             { id: 'first_steps', name: 'Primeros Pasos', desc: 'Completar tu primer ejercicio', icon: Target, condition: (s) => Object.keys(s).length > 0 },
@@ -214,11 +228,11 @@
 
         const examsData = {
             I: { id: "I", title: "Examen I - Fundamentos", desc: "Ejercicios progresivos.", drills: [ 
-                { id: "F1", name: "Tiro de Corte", desc: "Práctica progresiva.", max_score: 10, total_shots: 10, pdf_page: 1, scoringType: 'progressive' }, 
-                { id: "F2", name: "Tiro de Stop", desc: "Detener CB en zona fantasma.", max_score: 10, total_shots: 10, pdf_page: 2, scoringType: 'progressive' }, 
-                { id: "F3", name: "Tiro Corrido", desc: "Seguir a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 3, scoringType: 'progressive' }, 
-                { id: "F4", name: "Tiro de Retroceso", desc: "Retroceder a zona objetivo.", max_score: 10, total_shots: 10, pdf_page: 4, scoringType: 'progressive' }, 
-                { id: "F5", name: "Tiro Seco", desc: "Control de stun.", max_score: 10, total_shots: 10, pdf_page: 5, scoringType: 'progressive' }, 
+                { id: "F1", name: "Tiro de Corte", desc: "Práctica progresiva.", max_score: 10, total_shots: 10, start_score: 4, pdf_page: 1, scoringType: 'progressive' }, 
+                { id: "F2", name: "Tiro de Stop", desc: "Detener CB en zona fantasma.", max_score: 10, total_shots: 10, start_score: 4, pdf_page: 2, scoringType: 'progressive' }, 
+                { id: "F3", name: "Tiro Corrido", desc: "Seguir a zona objetivo.", max_score: 10, total_shots: 10, start_score: 4, pdf_page: 3, scoringType: 'progressive' }, 
+                { id: "F4", name: "Tiro de Retroceso", desc: "Retroceder a zona objetivo.", max_score: 10, total_shots: 10, start_score: 4, pdf_page: 4, scoringType: 'progressive' }, 
+                { id: "F5", name: "Tiro Seco", desc: "Control de stun.", max_score: 10, total_shots: 10, start_score: 1, pdf_page: 5, scoringType: 'progressive' }, 
                 { id: "F6", name: "Embocar Bolas", desc: "Sin tocar bandas innecesarias.", max_score: 10, total_shots: 10, pdf_page: 6, scoringType: 'count' }, 
                 { id: "F7", name: "Rueda de Carreta", desc: "Control de dirección.", max_score: 20, total_shots: 20, pdf_page: 7, scoringType: 'count' }, 
                 { id: "F8", name: "Objetivo en Rejilla", desc: "Posición precisa.", max_score: 20, total_shots: 20, pdf_page: 8, scoringType: 'count' } 
@@ -257,7 +271,7 @@
 
         const PdfViewer = ({ page }) => {
             const canvasRef = useRef(null);
-            const [scale, setScale] = useState(1.0); // Optimized for mobile
+            const [scale, setScale] = useState(1.0); 
 
             useEffect(() => {
                 const renderPdf = async () => {
@@ -281,9 +295,10 @@
 
             return (
                 <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-800 relative">
-                     <div className="absolute top-2 right-2 flex gap-2 z-20 bg-white/80 dark:bg-black/50 p-1 rounded-lg backdrop-blur-sm">
-                        <button onClick={() => setScale(s => Math.max(0.4, s - 0.2))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><ZoomOut size={16} /></button>
-                        <button onClick={() => setScale(s => Math.min(3.0, s + 0.2))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><ZoomIn size={16} /></button>
+                     {/* ZOOM MOVED TO BOTTOM RIGHT */}
+                     <div className="absolute bottom-4 right-4 flex gap-2 z-20">
+                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.25))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><ZoomOut size={20} /></button>
+                        <button onClick={() => setScale(s => Math.min(3.0, s + 0.25))} className="p-2 bg-white dark:bg-gray-900 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"><ZoomIn size={20} /></button>
                     </div>
                     <div className="pdf-scroll-container">
                         <canvas ref={canvasRef} className="pdf-canvas" />
@@ -330,102 +345,122 @@
 
         // --- 5. PANELES DE PUNTUACIÓN ---
         const UnifiedScoringPanel = ({ drill, savedData, onUpdateData, onClose, onNext, isLast, level, onReset, notes, onSaveNote }) => {
-            const score = getSafeScore(savedData);
-            const attempts = getSafeAttempts(savedData);
+            const [attempts, setAttempts] = useState(0);
+            const [position, setPosition] = useState(0);
+            const [customLimit, setCustomLimit] = useState(null);
+            const [isEditingAttempts, setIsEditingAttempts] = useState(false);
             const [noteText, setNoteText] = useState(notes || "");
             const [showNotes, setShowNotes] = useState(false);
-            const [isEditingAttempts, setIsEditingAttempts] = useState(false);
-            const [customLimit, setCustomLimit] = useState(null);
 
             let totalShotsLimit = customLimit || 10;
             let maxScore = 10;
 
-            if (typeof drill.max_score === 'object' && drill.max_score !== null) maxScore = drill.max_score[level] || 10;
-            else maxScore = drill.max_score || 10;
-
-            if (!customLimit) {
-                if (typeof drill.total_shots === 'object') totalShotsLimit = drill.total_shots[level] || 10;
-                else if (drill.total_shots) totalShotsLimit = drill.total_shots;
-                
-                if (drill.scoringType === 'weighted') totalShotsLimit = 3;
-                if (drill.scoringType === 'deduction') totalShotsLimit = 100; 
-            }
-
+            // Initialize defaults
             useEffect(() => {
-                if (drill.scoringType === 'deduction' && attempts === 0 && score === 0) {
-                    onUpdateData(100, 0);
+                if (drill.total_shots) {
+                     if (typeof drill.total_shots === 'object') totalShotsLimit = drill.total_shots[level] || 10;
+                     else totalShotsLimit = drill.total_shots;
                 }
-            }, [drill.id]);
+                if (drill.scoringType === 'weighted') totalShotsLimit = 3;
+                if (drill.scoringType === 'deduction') totalShotsLimit = 100;
+                
+                // Initialize position for progressive drills
+                if (drill.scoringType === 'progressive') {
+                    setPosition(drill.start_score || 4);
+                } else {
+                    setPosition(savedData ? getSafeScore(savedData) : 0); // Load saved score if any
+                }
+            }, [drill.id, level]);
+
+            // Update parent when local state changes (only when needed to save progress)
+            // Actually, for this implementation, better to drive from props or update parent on every click.
+            // To simplify, I'll keep local state for immediate UI feedback and call onUpdateData.
 
             const handleHit = () => {
-                let newScore = score;
                 let newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                let newScore = position;
 
                 if (drill.scoringType === 'progressive') {
-                    let pos = 0, bonus = 0;
-                    if (score > 0) { if (score <= 7) { pos = score; bonus = 0; } else { pos = 7; bonus = score - 7; } }
-                    if (pos < 7) pos++; else if (bonus < 3) bonus++;
-                    newScore = pos + bonus;
+                    // F1-F4: Start 4. Hit -> +1. Max 7.
+                    // F5: Start 1. Hit -> +1. Max 7.
+                    if (newScore < 7) newScore = newScore + 1;
                 } 
-                else if (drill.scoringType === 'weighted') {
-                    let points = 0;
-                    if (attempts === 0) points = 4; else if (attempts === 1) points = 2; else if (attempts === 2) points = 1;
-                    newScore = points; newAttempts = 3; 
-                }
                 else if (drill.scoringType === 'deduction') {
-                    // PPC Hit: No deduction
+                     // PPC Hit: Points stay same. Just attempts increase.
                 }
                 else {
-                    newScore = Math.min(maxScore, score + 1);
+                    // Standard / Weighted: Score + 1
+                    newScore = newScore + 1;
                 }
-                onUpdateData(newScore, newAttempts);
+                setPosition(newScore);
+                onUpdateData(newScore, newAttempts); // Save to persistent
             };
 
             const handleMiss = () => {
-                let newScore = score;
                 let newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                let newScore = position;
+
                 if (drill.scoringType === 'progressive') {
-                    newScore = Math.max(0, score - 1);
-                } else if (drill.scoringType === 'weighted') {
-                    if (attempts >= 2) newScore = 0; 
+                     // Logic: -1 position, min 1.
+                     if (newScore > 1) newScore = newScore - 1;
                 } else if (drill.scoringType === 'deduction') {
-                     newScore = score - 1;
+                     newScore = newScore - 1;
                 }
+                setPosition(newScore);
                 onUpdateData(newScore, newAttempts);
             };
 
             const handleLocalReset = () => {
-                onUpdateData(drill.scoringType === 'deduction' ? 100 : 0, 0);
+                setAttempts(0);
+                let resetScore = 0;
+                if (drill.scoringType === 'progressive') resetScore = drill.start_score || 4;
+                if (drill.scoringType === 'deduction') resetScore = 100;
+                setPosition(resetScore);
+                onUpdateData(resetScore, 0);
             };
 
             const handleSaveNote = () => { onSaveNote(noteText); setShowNotes(false); };
 
             let statusText = "Aciertos";
-            if(drill.scoringType === 'progressive') statusText = "Nivel Alcanzado";
+            if(drill.scoringType === 'progressive') statusText = "Nivel / Posición";
             if(drill.scoringType === 'weighted') statusText = "Puntos Obtenidos";
             if(drill.scoringType === 'deduction') statusText = "Puntos Restantes";
 
+            // --- INDICADOR DE POSICIÓN (Solo Progresivo) ---
+            let positionIndicator = null;
+            if (drill.scoringType === 'progressive') {
+                positionIndicator = (
+                    <div className="bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300 dark:border-yellow-700 rounded-xl p-4 mb-6 w-full max-w-md text-center shadow-sm">
+                         <p className="text-sm text-yellow-800 dark:text-yellow-200 font-bold uppercase tracking-wide">Próximo Tiro</p>
+                         <p className="text-3xl font-black text-yellow-900 dark:text-white mt-1">TIRAR DESDE POSICIÓN {position}</p>
+                    </div>
+                );
+            }
+
             let buttonsDisabled = false;
-            if (drill.scoringType === 'progressive' && attempts >= 10) buttonsDisabled = true;
-            if (drill.scoringType === 'weighted' && (attempts >= 3 || score > 0)) buttonsDisabled = true;
-            if (drill.scoringType === 'count' && attempts >= totalShotsLimit) buttonsDisabled = true;
-            if (drill.scoringType === 'deduction' && attempts >= 1) buttonsDisabled = true; 
+            if (attempts >= totalShotsLimit) buttonsDisabled = true;
 
             return (
                 <div className="flex flex-col h-full p-8 items-center justify-between relative">
                     <button onClick={handleLocalReset} className="absolute top-0 left-0 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2"><RotateCcw size={16} /> Reiniciar</button>
-                    <div className="text-center w-full mt-4">
+                    <div className="text-center w-full mt-4 flex flex-col items-center">
                         <div className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold mb-4 tracking-wide uppercase">{drill.id} - {drill.name}</div>
+                        
+                        {positionIndicator}
+
+                        {/* BIG NUMBER = ATTEMPTS */}
                         <div className="text-6xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter leading-none">
-                            {score} 
-                            {drill.scoringType !== 'deduction' && drill.scoringType !== 'weighted' && 
-                                <span className="text-4xl text-gray-300 dark:text-gray-600 font-medium flex items-center justify-center gap-2">
+                            {attempts} 
+                             <span className="text-4xl text-gray-300 dark:text-gray-600 font-medium flex items-center justify-center gap-2">
                                     / {isEditingAttempts ? <input type="number" className="w-16 bg-transparent border-b border-gray-400 text-center focus:outline-none" value={totalShotsLimit} onChange={(e) => setCustomLimit(Number(e.target.value))} onBlur={() => setIsEditingAttempts(false)} autoFocus /> : totalShotsLimit}
                                     <button onClick={() => setIsEditingAttempts(true)} className="text-gray-400 hover:text-blue-500"><Edit size={16}/></button>
-                                </span>
-                            }
+                            </span>
                         </div>
-                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">{statusText} | Intentos: {attempts}</div>
+                        {/* Small text showing Score/Position to keep track */}
+                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">{statusText}: {position}</div>
+                        
                         {(drill.scoringType === 'count' || drill.scoringType === 'progressive') && (<div className="w-full max-w-md mx-auto h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-6"><div className="h-full bg-blue-500 transition-all duration-300" style={{width: `${Math.min(100, (attempts / totalShotsLimit) * 100)}%`}}></div></div>)}
                     </div>
                     <div className="relative z-10 w-full flex justify-center"><ActionButtons onHit={handleHit} onMiss={handleMiss} hitDisabled={buttonsDisabled} missDisabled={buttonsDisabled} /></div>
@@ -437,41 +472,77 @@
 
         const MiniScoringPanel = ({ drill, savedData, onUpdateData }) => {
             const score = getSafeScore(savedData);
-            const attempts = getSafeAttempts(savedData);
-            let totalShots = drill.total_shots || 10;
-            if (drill.scoringType === 'weighted') totalShots = 3;
-            if (drill.scoringType === 'deduction') totalShots = 1;
+            const attempts = getSafeAttempts(savedData); // This might be 0 if not tracked before
+            
+            // Local state for attempts to allow incrementing
+            const [localAttempts, setLocalAttempts] = useState(attempts);
+            const [currentScore, setCurrentScore] = useState(score);
 
-             useEffect(() => { if (drill.scoringType === 'deduction' && attempts === 0 && score === 0) { onUpdateData(100, 0); } }, [drill.id]);
+            const [isEditingAttempts, setIsEditingAttempts] = useState(false);
+            const [customLimit, setCustomLimit] = useState(null);
+
+            let totalShots = customLimit || 10;
+            if (!customLimit) {
+                if (drill.total_shots) totalShots = drill.total_shots;
+                if (drill.scoringType === 'weighted') totalShots = 3;
+                if (drill.scoringType === 'deduction') totalShots = 100;
+            }
+            
+            // Init deduction score
+             useEffect(() => { 
+                 if (drill.scoringType === 'deduction' && localAttempts === 0 && currentScore === 0) { 
+                     setCurrentScore(100); 
+                     onUpdateData(100, 0); 
+                } 
+            }, [drill.id]);
 
             const handleHit = () => {
-                 if (drill.scoringType === 'deduction') { onUpdateData(score, attempts + 1); } 
-                 else if (drill.scoringType === 'weighted') {
-                     let points = 0;
-                     if (attempts === 0) points = 4; else if (attempts === 1) points = 2; else if (attempts === 2) points = 1;
-                     onUpdateData(points, 3);
+                 let newAttempts = localAttempts + 1;
+                 setLocalAttempts(newAttempts);
+                 let newScore = currentScore;
+                 
+                 if (drill.scoringType === 'deduction') { 
+                     // Hit keeps points
                  } else {
-                     if (attempts < totalShots) onUpdateData(Math.min(drill.max_score || 10, score + 1), attempts + 1);
+                     // Standard/Weighted: Score + 1
+                     newScore = currentScore + 1;
                  }
+                 setCurrentScore(newScore);
+                 onUpdateData(newScore, newAttempts);
             };
             const handleMiss = () => {
-                if (drill.scoringType === 'deduction') { onUpdateData(score - 1, attempts + 1); } 
-                else if (drill.scoringType === 'weighted') { if (attempts >= 2) onUpdateData(0, 3); else onUpdateData(0, attempts + 1); } 
-                else { if (attempts < totalShots) onUpdateData(score, attempts + 1); }
+                 let newAttempts = localAttempts + 1;
+                 setLocalAttempts(newAttempts);
+                 let newScore = currentScore;
+                 
+                 if (drill.scoringType === 'deduction') {
+                     newScore = currentScore - 1;
+                 }
+                 // For other types, miss just adds attempt
+                 setCurrentScore(newScore);
+                 onUpdateData(newScore, newAttempts);
             };
-            const handleReset = () => { onUpdateData(drill.scoringType === 'deduction' ? 100 : 0, 0); };
-
-            let buttonsDisabled = false;
-            if (drill.scoringType === 'count' && attempts >= totalShots) buttonsDisabled = true;
-            if (drill.scoringType === 'weighted' && (attempts >= 3 || score > 0)) buttonsDisabled = true;
-            if (drill.scoringType === 'deduction' && attempts >= 1) buttonsDisabled = true;
+            const handleReset = () => { 
+                let resetVal = (drill.scoringType === 'deduction') ? 100 : 0;
+                setCurrentScore(resetVal);
+                setLocalAttempts(0);
+                onUpdateData(resetVal, 0); 
+            };
+            
+            let buttonsDisabled = localAttempts >= totalShots;
 
             return (
                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative mb-4">
                     <button onClick={handleReset} className="absolute top-2 left-2 text-gray-400 hover:text-red-500 p-1"><RotateCcw size={14}/></button>
-                    <div className="flex justify-between items-center mb-3 pl-8"><div><h4 className="font-bold text-gray-800 dark:text-gray-200">{drill.name}</h4></div><div className="text-xl font-black">{score}</div></div>
+                    <div className="flex justify-between items-center mb-3 pl-8"><div><h4 className="font-bold text-gray-800 dark:text-gray-200">{drill.name}</h4></div><div className="text-xl font-black">{currentScore}</div></div>
                     <div className="flex gap-2 mb-2"><button onClick={handleMiss} disabled={buttonsDisabled} className="flex-1 bg-red-500 text-white py-3 rounded-lg font-bold text-xs shadow disabled:opacity-50">Fallo</button><button onClick={handleHit} disabled={buttonsDisabled} className="flex-1 bg-green-500 text-white py-3 rounded-lg font-bold text-xs shadow disabled:opacity-50">Acierto</button></div>
-                    <div className="text-xs text-center mt-1 text-gray-500">Intentos: {attempts} / {totalShots}</div>
+                    
+                     {/* EDITABLE ATTEMPTS FOR MINI PANELS */}
+                    <div className="text-xs text-center mt-1 text-gray-500 flex items-center justify-center gap-1">
+                        Intentos: {localAttempts} / 
+                        {isEditingAttempts ? <input type="number" className="w-8 bg-transparent border-b border-gray-400 text-center text-xs focus:outline-none" value={totalShots} onChange={(e) => setCustomLimit(Number(e.target.value))} onBlur={() => setIsEditingAttempts(false)} autoFocus /> : totalShots}
+                        <button onClick={() => setIsEditingAttempts(true)} className="text-gray-400 hover:text-blue-500"><Edit size={10}/></button>
+                    </div>
                 </div>
             );
         }
@@ -485,13 +556,14 @@
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 modal-overlay animate-in-fade">
                     <div className="bg-white dark:bg-gray-900 w-full h-full md:h-[90vh] md:rounded-3xl md:shadow-2xl flex flex-col md:flex-row relative animate-in-zoom border border-gray-200 dark:border-gray-800">
+                        {/* CLOSE BUTTON (Z-INDEX HIGH) */}
                         <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white hover:bg-gray-100 text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
+                        
                         <div className="w-full h-1/2 md:h-full md:w-7/12 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 relative flex flex-col">
-                             <div className="absolute top-4 right-4 z-50 md:hidden"><button onClick={onClose} className="bg-white/80 text-gray-800 p-2 rounded-full shadow-md"><X size={24} /></button></div>
                              <PdfViewer page={pdfPage} />
                         </div>
                         <div className="w-full h-1/2 md:h-full md:w-5/12 bg-white dark:bg-gray-900 flex flex-col relative z-20 overflow-y-auto">
-                            <div className="absolute top-4 right-4 hidden md:block"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"><X size={24} /></button></div>
+                            <div className="absolute top-4 right-4 hidden md:block z-50"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"><X size={24} /></button></div>
                             {isMultiDrill ? (
                                 <div className="p-8 flex flex-col h-full">
                                     <div className="mb-6 text-center"><h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">{drill.name}</h2><p className="text-sm text-gray-500">{drill.desc}</p></div>
@@ -535,7 +607,7 @@
             const [isCreating, setIsCreating] = useState(usersList.length === 0);
             const handleCreate = (e) => { e.preventDefault(); if(!username.trim()) return; const name = username.trim(); if (!usersList.includes(name)) { const newList = [...usersList, name]; setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); } onLogin(name); };
             const handleDelete = (name) => { if(confirm(`¿Borrar a ${name}?`)) { const newList = usersList.filter(u => u !== name); setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); localStorage.removeItem(`bu_scores_${name}`); localStorage.removeItem(`bu_history_${name}`); if(usersList.length === 1) setIsCreating(true); } };
-            if (isCreating) return (<div className="min-h-screen flex flex-col items-center justify-center bg-pool-table px-4 relative overflow-hidden animate-bg-pool"><div className="max-w-md w-full bg-black/50 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/10 text-center relative z-10">{usersList.length > 0 && <button onClick={() => setIsCreating(false)} className="absolute top-4 left-4 text-white/70 hover:text-white"><ChevronLeft size={24} /></button>}<div className="flex justify-center mb-6"><div className="flex -space-x-3"><div className="w-12 h-12 bg-yellow-500 rounded-full border-4 border-white shadow-md z-10 flex items-center justify-center text-black text-lg font-bold">1</div><div className="w-12 h-12 bg-blue-700 rounded-full border-4 border-white shadow-md z-20 flex items-center justify-center text-white text-lg font-bold">2</div><div className="w-12 h-12 bg-red-600 rounded-full border-4 border-white shadow-md z-30 flex items-center justify-center text-white text-lg font-bold">3</div></div></div><h1 className="text-4xl font-black text-white mb-2 tracking-wider">TIRO MAESTRO</h1><h2 className="text-xl font-medium text-gray-200 mb-8 tracking-wide uppercase">Examen Pool</h2><form onSubmit={handleCreate}><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="NOMBRE DE JUGADOR" className="w-full p-4 rounded-full bg-white text-gray-900 placeholder-gray-500 text-center font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 mb-4 shadow-inner" autoFocus /><button type="submit" disabled={!username.trim()} className="w-full p-4 rounded-full bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest transition duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-600 shadow-lg transform active:scale-95">ENTRAR</button></form><div className="mt-8 text-gray-300 text-xs"><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" className="hover:text-yellow-400 transition duration-200 underline">Tiro Maestro (Entrenamiento)</a></div></div></div>);
+            if (isCreating) return (<div className="min-h-screen flex flex-col items-center justify-center bg-pool-table px-4 relative overflow-hidden animate-bg-pool"><div className="max-w-md w-full bg-black/80 backdrop-blur-sm p-8 pool-table-frame text-center relative z-10"><div className="pocket pocket-tl"></div><div className="pocket pocket-tr"></div><div className="pocket pocket-bl"></div><div className="pocket pocket-br"></div><button onClick={() => setIsCreating(false)} className="absolute top-4 left-4 text-white/70 hover:text-white z-30"><ChevronLeft size={24} /></button><div className="flex justify-center mb-6"><div className="flex -space-x-3"><div className="w-12 h-12 bg-yellow-500 rounded-full border-4 border-white shadow-md z-10 flex items-center justify-center text-black text-lg font-bold">1</div><div className="w-12 h-12 bg-blue-700 rounded-full border-4 border-white shadow-md z-20 flex items-center justify-center text-white text-lg font-bold">2</div><div className="w-12 h-12 bg-red-600 rounded-full border-4 border-white shadow-md z-30 flex items-center justify-center text-white text-lg font-bold">3</div></div></div><h1 className="text-4xl font-black text-white mb-2 tracking-wider drop-shadow-lg">TIRO MAESTRO</h1><h2 className="text-xl font-medium text-gray-200 mb-8 tracking-wide uppercase">EXAMEN POOL</h2><form onSubmit={handleCreate}><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="NOMBRE DE JUGADOR" className="w-full p-4 rounded-full bg-white text-gray-900 placeholder-gray-500 text-center font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 mb-4 shadow-inner" autoFocus /><button type="submit" disabled={!username.trim()} className="w-full p-4 rounded-full bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest transition duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-600 shadow-lg transform active:scale-95">ENTRAR</button></form><div className="mt-8 text-gray-300 text-xs"><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" className="hover:text-yellow-400 transition duration-200 underline">Tiro Maestro (Entrenamiento)</a></div></div></div>);
             return (<div className="min-h-screen flex flex-col items-center justify-center bg-pool-table px-4 relative overflow-hidden animate-bg-pool"><div className="max-w-4xl w-full relative z-10"><div className="text-center mb-12"><h1 className="text-5xl font-black text-white mb-2 tracking-tight drop-shadow-lg">TIRO MAESTRO</h1><h2 className="text-2xl text-gray-200 font-light tracking-widest uppercase">Selecciona tu Perfil</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">{usersList.map(u => <div key={u} onClick={() => onLogin(u)} className="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20 hover:scale-105 transition duration-300 cursor-pointer group relative overflow-hidden"><div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:opacity-100 transition"></div><span className="font-black text-gray-900 text-xl block mb-2">{u}</span><button onClick={(e) => {e.stopPropagation(); handleDelete(u);}} className="text-gray-400 hover:text-red-500 absolute bottom-4 right-4"><Trash2 size={18}/></button></div>)}<button onClick={() => setIsCreating(true)} className="bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/30 p-6 rounded-2xl flex flex-col items-center justify-center text-white hover:bg-white/20 transition group"><div className="bg-white/20 p-3 rounded-full mb-3 group-hover:bg-yellow-500 group-hover:text-black transition"><Plus size={24} /></div><span className="font-bold">Nuevo Jugador</span></button></div><div className="text-center mt-12 text-white/50 text-xs"><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" className="hover:text-white underline">Tiro Maestro (Entrenamiento)</a></div></div></div>);
         };
         const ExamCard = ({ exam, onSelect }) => (
@@ -597,10 +669,6 @@
         const Header = ({ goHome, onProfileClick, user, onLogout, resetData, ExtraContent, darkMode, toggleDarkMode }) => (
             <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800"><div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}><div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200"><Target className="text-white w-7 h-7" /></div><div className="hidden sm:block"><h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1><p className="text-[10px] text-gray-400 uppercase tracking-widest">Billiard University App</p></div></div><div className="flex gap-3 items-center">{ExtraContent}<button onClick={toggleDarkMode} className="p-2 text-gray-400 hover:text-yellow-400 transition">{darkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>{user && <React.Fragment><button onClick={resetData} className="p-2 text-gray-400 hover:text-red-400"><Trash2 size={20}/></button><button onClick={onProfileClick} className="flex items-center gap-2 bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700"><div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">{user.charAt(0).toUpperCase()}</div><span className="font-medium hidden sm:inline text-sm">{user}</span></button><button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400"><LogOut size={20}/></button></React.Fragment>}</div></header>
         );
-        const Glossary = ({ goBack }) => {
-            const [search, setSearch] = useState("");
-            return (<div className="max-w-3xl mx-auto p-4"><button onClick={goBack} className="flex items-center text-gray-500 dark:text-gray-400 mb-6"><ChevronLeft size={20} /> Volver</button><h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3"><BookOpen className="text-blue-600"/> Glosario de Billar</h2><input type="text" placeholder="Buscar términos..." className="w-full p-4 border rounded-xl shadow-sm mb-6 dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={search} onChange={(e) => setSearch(e.target.value)} /><div className="grid gap-4">{glossaryTerms.filter(t => t.term.toLowerCase().includes(search.toLowerCase()) || t.def_es.toLowerCase().includes(search.toLowerCase())).map((t, i) => <div key={i} className="bg-white dark:bg-gray-800 p-5 rounded-xl border dark:border-gray-700 shadow-sm"><h3 className="font-bold text-xl text-blue-900 dark:text-blue-400">{t.term}</h3><p className="text-gray-600 dark:text-gray-300 text-sm">{t.def_es}</p></div>)}</div></div>);
-        };
         const ExamDetail = ({ exam, onBack, user, scores, updateScore, resetExamScore, notes, saveNote, initialActiveDrill }) => {
             const [activeDrill, setActiveDrill] = useState(initialActiveDrill || null);
             const [selectedVariationDrill, setSelectedVariationDrill] = useState(null);
