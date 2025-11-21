@@ -697,6 +697,7 @@
             const [username, setUsername] = useState("");
             const [usersList, setUsersList] = useState(() => { const saved = localStorage.getItem('bu_users_list'); return saved ? JSON.parse(saved) : []; });
             const [isCreating, setIsCreating] = useState(usersList.length === 0);
+            const [showUserModal, setShowUserModal] = useState(false); // Estado para el modal de usuarios
             
             const handleCreate = (e) => { 
                 e.preventDefault(); 
@@ -735,7 +736,19 @@
                 reader.readAsText(file); 
             };
 
-            const handleDelete = (name) => { if(confirm(`¿Borrar a ${name}?`)) { const newList = usersList.filter(u => u !== name); setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); localStorage.removeItem(`bu_scores_${name}`); localStorage.removeItem(`bu_history_${name}`); if(usersList.length === 1) setIsCreating(true); } };
+            const handleDelete = (name) => { 
+                if(confirm(`¿Borrar a ${name}?`)) { 
+                    const newList = usersList.filter(u => u !== name); 
+                    setUsersList(newList); 
+                    localStorage.setItem('bu_users_list', JSON.stringify(newList)); 
+                    localStorage.removeItem(`bu_scores_${name}`); 
+                    localStorage.removeItem(`bu_history_${name}`); 
+                    if(usersList.length === 0) {
+                        setIsCreating(true); 
+                        setShowUserModal(false);
+                    }
+                } 
+            };
             const fileInputRef = useRef(null);
 
             return (<div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 px-4 relative overflow-hidden animate-in-fade">
@@ -753,21 +766,12 @@
                                 <span className="text-white font-bold text-sm uppercase tracking-wide">Nuevo Perfil</span>
                              </button>
 
-                             {/* Opción 2: Cargar Perfil (Azul) */}
+                             {/* Opción 2: Cargar Perfil (Azul) - MODIFICADO PARA ABRIR MODAL */}
                              {usersList.length > 0 && (
-                                 <div className="relative group">
-                                    <button className="w-full h-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition">
-                                        <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">2</div>
-                                        <span className="text-white font-bold text-sm uppercase tracking-wide">Cargar Perfil</span>
-                                    </button>
-                                    <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden hidden group-hover:block z-50">
-                                        {usersList.map(u => (
-                                            <div key={u} onClick={() => onLogin(u)} className="p-3 hover:bg-slate-700 cursor-pointer text-center border-b border-slate-700 last:border-0">
-                                                <span className="text-white font-bold">{u}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                 </div>
+                                 <button onClick={() => setShowUserModal(true)} className="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition group">
+                                     <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">2</div>
+                                     <span className="text-white font-bold text-sm uppercase tracking-wide">Cargar Perfil</span>
+                                 </button>
                              )}
 
                              {/* Opción 3: Importar (Roja) */}
@@ -796,12 +800,41 @@
 
                     {!isCreating && (
                         <div className="mt-12">
-                            <button className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl shadow-lg uppercase tracking-widest transition transform hover:scale-105">
-                                TIRO MAESTRO (EXAMEN POOL)
-                            </button>
+                            {/* MODIFICADO: Botón convertido en enlace */}
+                            <a href="https://juanmiguel0927.github.io/Pool/" target="_self" className="block w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl shadow-lg uppercase tracking-widest transition transform hover:scale-105 text-center no-underline">
+                                TIRO MAESTRO (PLAN DE ENTRENAMIENTO)
+                            </a>
                         </div>
                     )}
                 </div>
+
+                {/* MODAL DE SELECCIÓN Y BORRADO DE USUARIOS */}
+                {showUserModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
+                        <div className="bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in-zoom border border-slate-700 flex flex-col max-h-[80vh]">
+                            <button onClick={() => setShowUserModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white"><X size={24} /></button>
+                            <h3 className="text-xl font-bold text-white mb-4 text-center">Gestionar Perfiles</h3>
+                            <p className="text-gray-400 text-center text-sm mb-6">Selecciona para cargar o elimina usuarios.</p>
+                            
+                            <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
+                                {usersList.map(u => (
+                                    <div key={u} className="flex items-center justify-between bg-slate-700 p-3 rounded-xl border border-slate-600 hover:border-blue-500 transition-colors">
+                                        <button onClick={() => onLogin(u)} className="flex-1 text-left">
+                                            <span className="text-white font-bold block">{u}</span>
+                                            <span className="text-xs text-gray-400 uppercase font-bold">Cargar</span>
+                                        </button>
+                                        <button onClick={() => handleDelete(u)} className="p-3 text-gray-400 hover:text-red-500 hover:bg-slate-800 rounded-lg transition-colors" title="Borrar Usuario">
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 pt-4 border-t border-slate-700 text-center">
+                                <button onClick={() => setShowUserModal(false)} className="text-gray-500 hover:text-white text-sm font-bold uppercase">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>);
         };
 
