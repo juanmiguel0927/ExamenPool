@@ -111,9 +111,8 @@
         const IconBase = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
         );
-        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
         const Trophy = (p) => <IconBase {...p}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></IconBase>;
-        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
+        const Target = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
         const BookOpen = (p) => <IconBase {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>;
         const RotateCcw = (p) => <IconBase {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
         const ChevronLeft = (p) => <IconBase {...p}><path d="m15 18-6-6 6-6"/></IconBase>;
@@ -143,11 +142,11 @@
         const ChevronUp = (p) => <IconBase {...p}><path d="m18 15-6-6-6 6"/></IconBase>;
         const Edit = (p) => <IconBase {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></IconBase>;
         const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>;
+        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
 
         // 2. DATOS
         const PDF_RAW_URL = "https://cdn.jsdelivr.net/gh/juanmiguel0927/ExamenPool@5eae9e124ba5a7b3353ea766ce4533d87b00b94a/All.pdf";
 
-        // Función segura para URL del PDF
         const getPdfViewerUrl = (page) => {
             const pageNum = page && !isNaN(page) && page > 0 ? page : 1;
             return `${PDF_RAW_URL}#page=${pageNum}&view=FitH&toolbar=0&navpanes=0`;
@@ -204,7 +203,7 @@
             drills.push({ id: "PPC-1", name: "Ejercicio 1", desc: "Layout 1 PPC", pdf_page: 68, max_score: 100, total_shots: 100, scoringType: 'deduction', subDrills: [{ id: "PPC-1", name: "Layout 1", max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: 68 }] });
             for (let i = 2; i <= 17; i += 2) {
                 const page = 68 + (i / 2); 
-                drills.push({ id: `PPC-${i}-${i+1}`, name: `Ejercicios ${i} y ${i+1}`, desc: "Layouts PPC", pdf_page: page, isGroup: true, subDrills: [ { id: `PPC-${i}`, name: `Layout ${i}`, max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: page }, { id: `PPC-${i+1}`, name: `Layout ${i+1}`, max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: page } ] });
+                drills.push({ id: `PPC-${i}-${i+1}`, name: `Ejercicios ${i} y ${i+1}`, desc: "Layouts PPC", pdf_page: 68, isGroup: true, subDrills: [ { id: `PPC-${i}`, name: `Layout ${i}`, max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: 68 }, { id: `PPC-${i+1}`, name: `Layout ${i+1}`, max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: 68 } ] });
             }
             drills.push({ id: "PPC-18", name: "Ejercicio 18", desc: "Layout 18 PPC", pdf_page: 77, max_score: 100, total_shots: 100, scoringType: 'deduction', subDrills: [{ id: "PPC-18", name: "Layout 18", max_score: 100, total_shots: 100, scoringType: 'deduction', pdf_page: 77 }] });
             return drills;
@@ -338,16 +337,27 @@
 
         // --- 5. PANELES DE PUNTUACIÓN ---
         const UnifiedScoringPanel = ({ drill, savedData, onUpdateData, onClose, onNext, isLast, level, onReset, notes, onSaveNote }) => {
-            // "score" from savedData tracks the POINTS/POSITION (Saved as 'score')
-            // "attempts" from savedData tracks the COUNT OF SHOTS (Saved as 'attempts')
-            
-            const defaultStartScore = drill.start_score !== undefined ? drill.start_score : 0;
+            // Determine default start score based on drill type
+            const defaultStartScore = (drill.start_score !== undefined) ? drill.start_score : 0;
 
-            // Track if we have initialized. Using refs or careful useEffect logic.
-            const initializedRef = useRef(false);
+            // Logic to force correct start positions if data is missing or invalid
+            const getInitialPosition = () => {
+                // If we have saved data
+                if (savedData && savedData.attempts > 0) {
+                    // If it's progressive (F1-F5) and saved score is 0 (invalid), force reset
+                    if (drill.scoringType === 'progressive' && Number(savedData.score) === 0) {
+                         return defaultStartScore;
+                    }
+                    return Number(savedData.score);
+                }
+                // If new or invalid data
+                if (drill.scoringType === 'progressive') return defaultStartScore;
+                if (drill.scoringType === 'deduction') return 100;
+                return 0;
+            };
 
             const [attempts, setAttempts] = useState(savedData ? (Number(savedData.attempts) || 0) : 0);
-            const [position, setPosition] = useState(savedData ? (Number(savedData.score) !== undefined ? Number(savedData.score) : defaultStartScore) : defaultStartScore);
+            const [position, setPosition] = useState(getInitialPosition);
             
             const [noteText, setNoteText] = useState(notes || "");
             const [showNotes, setShowNotes] = useState(false);
@@ -363,37 +373,22 @@
                 if (drill.scoringType === 'weighted') totalShotsLimit = 3;
                 if (drill.scoringType === 'deduction') totalShotsLimit = 100; 
             }
-
-            // Initialization Effect
+            
+            // Force persistence of corrected state on mount if needed
             useEffect(() => {
-                // Only reset/initialize if we are opening a new drill or have no saved data
-                if (!savedData && !initializedRef.current) {
-                    if (drill.scoringType === 'progressive') {
-                         const start = drill.start_score !== undefined ? drill.start_score : 4;
-                         setPosition(start);
-                    } else if (drill.scoringType === 'deduction') {
-                        setPosition(100);
-                    } else {
-                        setPosition(0);
-                    }
-                    setAttempts(0);
-                    initializedRef.current = true;
-                } else if (savedData && !initializedRef.current) {
-                    setPosition(Number(savedData.score) !== undefined ? Number(savedData.score) : defaultStartScore);
-                    setAttempts(Number(savedData.attempts) || 0);
-                    initializedRef.current = true;
+                if (drill.scoringType === 'progressive' && (!savedData || Number(savedData.score) === 0)) {
+                     onUpdateData(defaultStartScore, attempts);
                 }
-            }, [drill.id, level, savedData]);
+            }, []);
+
 
             const handleHit = () => {
                 let newAttempts = attempts + 1;
                 let newScore = position;
 
                 if (drill.scoringType === 'progressive') {
-                    // Hit -> +1 pos, max 7
                     if (newScore < 7) newScore = newScore + 1;
                 } else {
-                    // Standard / Weighted: Score + 1. Deduction: Score unchanged (keeps points)
                     if (drill.scoringType !== 'deduction') newScore = newScore + 1;
                 }
                 
@@ -407,10 +402,8 @@
                 let newScore = position;
 
                 if (drill.scoringType === 'progressive') {
-                     // Miss -> -1 pos, min 1
                      if (newScore > 1) newScore = newScore - 1;
                 } else if (drill.scoringType === 'deduction') {
-                     // PPC Miss -> Score -1
                      newScore = newScore - 1;
                 }
                 
@@ -439,14 +432,13 @@
             let positionIndicator = null;
             if (drill.scoringType === 'progressive') {
                 positionIndicator = (
-                    <div className="bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300 dark:border-yellow-700 rounded-xl p-4 mb-6 w-full max-w-md text-center shadow-sm">
-                         <p className="text-sm text-yellow-800 dark:text-yellow-200 font-bold uppercase tracking-wide">Próximo Tiro</p>
-                         <p className="text-3xl font-black text-yellow-900 dark:text-white mt-1">DESDE POSICIÓN {position}</p>
+                    <div className="bg-yellow-500 text-black border-4 border-yellow-600 rounded-xl p-4 mb-6 w-full max-w-md text-center shadow-lg">
+                         <p className="text-xs font-bold uppercase tracking-wide opacity-80">Próximo Tiro</p>
+                         <p className="text-3xl font-black mt-1">DESDE POSICIÓN {position}</p>
                     </div>
                 );
             }
 
-            // AUTO-LOCK BUTTONS WHEN LIMIT REACHED
             let buttonsDisabled = false;
             if (attempts >= totalShotsLimit) buttonsDisabled = true;
 
@@ -454,23 +446,27 @@
                 <div className="flex flex-col h-full p-8 items-center justify-between relative">
                     <button onClick={handleLocalReset} className="absolute top-0 left-0 text-gray-400 hover:text-red-500 flex items-center gap-1 text-xs uppercase font-bold transition p-2"><RotateCcw size={16} /> Reiniciar</button>
                     <div className="text-center w-full mt-4 flex flex-col items-center">
-                        <div className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold mb-4 tracking-wide uppercase">{drill.id} - {drill.name}</div>
+                        <div className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">{drill.id} - {drill.name}</div>
                         
                         {positionIndicator}
 
-                        <div className="text-6xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter leading-none">
+                        <div className="text-7xl font-black text-white mb-2 tracking-tighter leading-none">
                             {attempts} 
-                             <span className="text-4xl text-gray-300 dark:text-gray-600 font-medium flex items-center justify-center gap-2">
-                                    / {isEditingAttempts ? <input type="number" className="w-16 bg-transparent border-b border-gray-400 text-center focus:outline-none" value={totalShotsLimit} onChange={(e) => setCustomLimit(Number(e.target.value))} onBlur={() => setIsEditingAttempts(false)} autoFocus /> : totalShotsLimit}
-                                    <button onClick={() => setIsEditingAttempts(true)} className="text-gray-400 hover:text-blue-500"><Edit size={16}/></button>
+                             <span className="text-4xl text-gray-600 font-medium flex items-center justify-center gap-2">
+                                    / {isEditingAttempts ? <input type="number" className="w-16 bg-transparent border-b border-gray-400 text-center focus:outline-none text-white" value={totalShotsLimit} onChange={(e) => setCustomLimit(Number(e.target.value))} onBlur={() => setIsEditingAttempts(false)} autoFocus /> : totalShotsLimit}
+                                    <button onClick={() => setIsEditingAttempts(true)} className="text-gray-600 hover:text-blue-500"><Edit size={16}/></button>
                             </span>
                         </div>
-                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">{statusText}: {position}</div>
-                        {(drill.scoringType === 'count' || drill.scoringType === 'progressive') && (<div className="w-full max-w-md mx-auto h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-6"><div className="h-full bg-blue-500 transition-all duration-300" style={{width: `${Math.min(100, (attempts / totalShotsLimit) * 100)}%`}}></div></div>)}
+                        <div className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-8">{statusText}: {position}</div>
                     </div>
                     <div className="relative z-10 w-full flex justify-center"><ActionButtons onHit={handleHit} onMiss={handleMiss} hitDisabled={buttonsDisabled} missDisabled={buttonsDisabled} /></div>
-                    <div className="mt-2 mb-4 border-t border-gray-100 dark:border-gray-700 pt-4 w-full relative z-10"><button onClick={() => setShowNotes(!showNotes)} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-blue-600 w-full justify-center"><FileText size={16}/> {noteText ? 'Editar Nota' : 'Añadir Nota'}</button>{showNotes && <div className="mt-2 bg-yellow-50 dark:bg-yellow-900/30 p-2 rounded-lg border border-yellow-100 dark:border-yellow-900"><textarea className="w-full bg-transparent text-sm text-gray-700 dark:text-gray-300 focus:outline-none resize-none" rows="3" placeholder="Nota..." value={noteText} onChange={(e) => setNoteText(e.target.value)}></textarea><button onClick={handleSaveNote} className="w-full bg-yellow-200 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-100 text-xs font-bold py-1 rounded mt-1 hover:bg-yellow-300">Guardar Nota</button></div>}{!showNotes && noteText && <p className="text-xs text-gray-500 mt-2 italic text-center">"{noteText}"</p>}</div>
-                    <div className="w-full flex gap-3 relative z-10"><button onClick={onClose} className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-sm hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button><button onClick={onNext} className="flex-[2] bg-gray-800 dark:bg-green-600 hover:bg-gray-900 dark:hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-sm flex items-center justify-center gap-2">{isLast ? "Guardar y Salir" : "Guardar y Siguiente"} {!isLast && <ChevronRight size={18} />}</button></div>
+                    
+                    <div className="w-full flex gap-3 relative z-10 mt-auto">
+                        <button onClick={onClose} className="flex-1 bg-gray-800 border border-gray-700 text-gray-400 font-bold py-4 rounded-xl shadow-sm transition uppercase tracking-widest text-xs hover:bg-gray-700">Cancelar</button>
+                        <button onClick={onNext} className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                             {isLast ? "Guardar y Salir" : "Guardar y Siguiente"} {!isLast && <ChevronRight size={16} />}
+                        </button>
+                    </div>
                 </div>
             );
         };
@@ -553,30 +549,26 @@
             let pdfPage = drill.pdf_page;
             if (typeof pdfPage === 'object' && pdfPage !== null) { pdfPage = pdfPage[level] || pdfPage['Bachelors']; }
             const isMultiDrill = drill.isGroup && drill.subDrills;
-
-            // Get score/attempts safe
             const currentData = fullData[drill.id] || {score: 0, attempts: 0};
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 modal-overlay animate-in-fade">
-                    <div className="bg-white dark:bg-gray-900 w-full h-full md:h-[90vh] md:rounded-3xl md:shadow-2xl flex flex-col md:flex-row relative animate-in-zoom border border-gray-200 dark:border-gray-800">
-                        {/* CLOSE BUTTON (Z-INDEX HIGH) */}
-                        <button onClick={onClose} className="absolute top-4 right-4 z-50 bg-white hover:bg-gray-100 text-gray-800 p-2 rounded-full shadow-md transition md:hidden"><X size={24} /></button>
-                        
-                        <div className="w-full h-1/2 md:h-full md:w-7/12 bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 relative flex flex-col">
+                    <div className="bg-slate-900 w-full h-full md:h-[95vh] md:rounded-3xl md:shadow-2xl flex flex-col md:flex-row relative animate-in-zoom border border-slate-700 overflow-hidden">
+                        <div className="w-full h-1/2 md:h-full md:w-7/12 bg-slate-800 relative flex flex-col border-b md:border-b-0 md:border-r border-slate-700">
+                             <div className="absolute top-4 right-4 z-50 md:hidden"><button onClick={onClose} className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm"><X size={24} /></button></div>
                              <PdfViewer page={pdfPage} />
                         </div>
-                        <div className="w-full h-1/2 md:h-full md:w-5/12 bg-white dark:bg-gray-900 flex flex-col relative z-20 overflow-y-auto">
-                            <div className="absolute top-4 right-4 hidden md:block z-50"><button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"><X size={24} /></button></div>
+                        <div className="w-full h-1/2 md:h-full md:w-5/12 bg-slate-900 flex flex-col relative z-20 overflow-y-auto">
+                            <div className="absolute top-4 right-4 hidden md:block z-50"><button onClick={onClose} className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition"><X size={24} /></button></div>
                             {isMultiDrill ? (
-                                <div className="p-8 flex flex-col h-full">
-                                    <div className="mb-6 text-center"><h2 className="text-2xl font-black text-gray-900 dark:text-white mb-1">{drill.name}</h2><p className="text-sm text-gray-500">{drill.desc}</p></div>
-                                    <div className="flex-grow overflow-y-auto space-y-4 pr-2 mb-4">
+                                <div className="p-6 flex flex-col h-full">
+                                    <div className="mb-6 text-center"><h2 className="text-2xl font-black text-white mb-1">{drill.name}</h2><p className="text-sm text-gray-500">{drill.desc}</p></div>
+                                    <div className="flex-grow overflow-y-auto space-y-3 pr-2 mb-4 custom-scrollbar">
                                         {drill.subDrills.map(subDrill => (
                                             <MiniScoringPanel key={subDrill.id} drill={subDrill} savedData={fullData[subDrill.id]} onUpdateData={(s, a) => onUpdateScore(subDrill.id, s, a)} />
                                         ))}
                                     </div>
-                                    <button onClick={onNextDrill} className="w-full mt-auto bg-gray-800 dark:bg-green-600 hover:bg-gray-900 dark:hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg uppercase text-sm flex justify-center gap-2">{isLastDrill ? "Guardar y Salir" : "Siguiente Página"} {!isLastDrill && <ChevronRight size={18} />}</button>
+                                    <button onClick={onNextDrill} className="w-full mt-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg uppercase text-sm flex justify-center gap-2">{isLastDrill ? "Guardar y Salir" : "Siguiente Página"} {!isLastDrill && <ChevronRight size={18} />}</button>
                                 </div>
                             ) : (
                                 <UnifiedScoringPanel key={drill.id} drill={drill} savedData={currentData} onUpdateData={(s, a) => onUpdateScore(drill.id, s, a)} onClose={onClose} onNext={onNextDrill} isLast={isLastDrill} level={level} onClose={onClose} note={notes[`${examId}-${drill.id}`]} onSaveNote={(txt) => saveNote(examId, drill.id, txt)} />
@@ -589,14 +581,14 @@
 
         const VariationsModal = ({ drill, onClose, onSelectVariation }) => (
              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay animate-in-fade">
-                <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 relative animate-in-zoom">
-                     <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white"><X size={24} /></button>
-                     <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4 text-center">{drill.name}</h3>
-                     <p className="text-gray-500 text-center mb-6 text-sm">{drill.desc_es}</p>
+                <div className="bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 relative animate-in-zoom border border-slate-700">
+                     <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white"><X size={24} /></button>
+                     <h3 className="text-xl font-black text-white mb-4 text-center">{drill.name}</h3>
+                     <p className="text-gray-400 text-center mb-6 text-sm">{drill.desc_es}</p>
                      <div className="flex flex-col gap-3">
                          {drill.variations.map(v => (
-                             <button key={v.id} onClick={() => onSelectVariation(v)} className="p-4 bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900 border border-gray-200 dark:border-gray-600 hover:border-blue-200 rounded-xl text-left transition group">
-                                 <span className="font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-700 block">{v.name}</span>
+                             <button key={v.id} onClick={() => onSelectVariation(v)} className="p-4 bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-blue-500 rounded-xl text-left transition group">
+                                 <span className="font-bold text-white group-hover:text-blue-400 block">{v.name}</span>
                                  <span className="text-xs text-gray-400 uppercase font-bold tracking-wider">ID: {v.id}</span>
                              </button>
                          ))}
@@ -605,18 +597,10 @@
              </div>
         );
 
-        const LoginScreen = ({ onLogin }) => {
-            const [username, setUsername] = useState("");
-            const [usersList, setUsersList] = useState(() => { const saved = localStorage.getItem('bu_users_list'); return saved ? JSON.parse(saved) : []; });
-            const [isCreating, setIsCreating] = useState(usersList.length === 0);
-            const handleCreate = (e) => { e.preventDefault(); if(!username.trim()) return; const name = username.trim(); if (!usersList.includes(name)) { const newList = [...usersList, name]; setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); } onLogin(name); };
-            const handleDelete = (name) => { if(confirm(`¿Borrar a ${name}?`)) { const newList = usersList.filter(u => u !== name); setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); localStorage.removeItem(`bu_scores_${name}`); localStorage.removeItem(`bu_history_${name}`); if(usersList.length === 1) setIsCreating(true); } };
-            if (isCreating) return (<div className="min-h-screen flex flex-col items-center justify-center bg-pool-table px-4 relative overflow-hidden animate-bg-pool"><div className="max-w-md w-full bg-black/80 backdrop-blur-sm p-8 pool-table-frame text-center relative z-10"><div className="pocket pocket-tl"></div><div className="pocket pocket-tr"></div><div className="pocket pocket-bl"></div><div className="pocket pocket-br"></div><button onClick={() => setIsCreating(false)} className="absolute top-4 left-4 text-white/70 hover:text-white z-30"><ChevronLeft size={24} /></button><div className="flex justify-center mb-6"><div className="flex -space-x-3"><div className="w-12 h-12 bg-yellow-500 rounded-full border-4 border-white shadow-md z-10 flex items-center justify-center text-black text-lg font-bold">1</div><div className="w-12 h-12 bg-blue-700 rounded-full border-4 border-white shadow-md z-20 flex items-center justify-center text-white text-lg font-bold">2</div><div className="w-12 h-12 bg-red-600 rounded-full border-4 border-white shadow-md z-30 flex items-center justify-center text-white text-lg font-bold">3</div></div></div><h1 className="text-4xl font-black text-white mb-2 tracking-wider drop-shadow-lg">TIRO MAESTRO</h1><h2 className="text-xl font-medium text-gray-200 mb-8 tracking-wide uppercase">EXAMEN POOL</h2><form onSubmit={handleCreate}><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="NOMBRE DE JUGADOR" className="w-full p-4 rounded-full bg-white text-gray-900 placeholder-gray-500 text-center font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 mb-4 shadow-inner" autoFocus /><button type="submit" disabled={!username.trim()} className="w-full p-4 rounded-full bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest transition duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-600 shadow-lg transform active:scale-95">ENTRAR</button></form><div className="mt-8 text-gray-300 text-xs"><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" className="hover:text-yellow-400 transition duration-200 underline">Tiro Maestro (Entrenamiento)</a></div></div></div>);
-            return (<div className="min-h-screen flex flex-col items-center justify-center bg-pool-table px-4 relative overflow-hidden animate-bg-pool"><div className="max-w-4xl w-full relative z-10"><div className="text-center mb-12"><h1 className="text-5xl font-black text-white mb-2 tracking-tight drop-shadow-lg">TIRO MAESTRO</h1><h2 className="text-2xl text-gray-200 font-light tracking-widest uppercase">Selecciona tu Perfil</h2></div><div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">{usersList.map(u => <div key={u} onClick={() => onLogin(u)} className="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20 hover:scale-105 transition duration-300 cursor-pointer group relative overflow-hidden"><div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:opacity-100 transition"></div><span className="font-black text-gray-900 text-xl block mb-2">{u}</span><button onClick={(e) => {e.stopPropagation(); handleDelete(u);}} className="text-gray-400 hover:text-red-500 absolute bottom-4 right-4"><Trash2 size={18}/></button></div>)}<button onClick={() => setIsCreating(true)} className="bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/30 p-6 rounded-2xl flex flex-col items-center justify-center text-white hover:bg-white/20 transition group"><div className="bg-white/20 p-3 rounded-full mb-3 group-hover:bg-yellow-500 group-hover:text-black transition"><Plus size={24} /></div><span className="font-bold">Nuevo Jugador</span></button></div><div className="text-center mt-12 text-white/50 text-xs"><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" className="hover:text-white underline">Tiro Maestro (Entrenamiento)</a></div></div></div>);
-        };
         const ExamCard = ({ exam, onSelect }) => (
             <div onClick={() => onSelect(exam)} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-xl hover:border-green-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"><div className="absolute top-0 right-0 bg-gradient-to-br from-gray-50 to-gray-100 w-24 h-24 rounded-bl-full -mr-10 -mt-10 transition-colors group-hover:from-green-50 group-hover:to-green-100"></div><div className="flex items-center gap-4 mb-4 relative z-10"><div className="p-3 bg-gray-100 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300 text-gray-700 shadow-sm">{exam.id === 'I' && <RotateCcw size={28} />}{exam.id === 'II' && <Shield size={28} />}{exam.id === 'III' && <Trophy size={28} />}{['IV', 'V', 'VI'].includes(exam.id) && <BookOpen size={28} />}</div><h2 className="text-xl font-bold text-gray-800 group-hover:text-green-700 transition-colors">{exam.title}</h2></div><p className="text-gray-500 text-sm mb-6 leading-relaxed relative z-10">{exam.desc}</p><div className="text-green-600 text-sm font-bold flex items-center gap-2 group-hover:translate-x-2 transition-transform">Iniciar Evaluación <ChevronLeft className="rotate-180 w-4 h-4" /></div></div>
         );
+
         const UserProfile = ({ user, scores, goBack, onExport, onImport, history, onDrillSelect }) => {
             const scoreI = Object.values(scores['I'] || {}).reduce((a, b) => a + getSafeScore(b), 0);
             const scoreII = Object.values(scores['II'] || {}).reduce((a, b) => a + getSafeScore(b), 0);
@@ -708,9 +692,123 @@
                 
                 <p className="text-lg text-gray-500">Nivel: <span className="font-bold text-blue-600 dark:text-blue-400">{buLevel.label}</span></p></div><div className="flex gap-2"><button onClick={onExport} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Download size={14}/> Exportar</button><button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-bold hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-white"><Upload size={14}/> Importar</button><input type="file" ref={fileInputRef} onChange={onImport} className="hidden" accept=".json" /></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Trophy className="text-yellow-500" size={18}/> Puntuaciones Actuales</h4><div className="space-y-3"><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen I</span><b>{scoreI}/100</b></div><div className="flex justify-between text-sm border-b border-gray-100 dark:border-gray-700 pb-2 dark:text-gray-300"><span>Examen II</span><b>{scoreII}/100</b></div><div className="flex justify-between text-sm pt-1 dark:text-white"><span className="font-bold">Total BU</span><span className="font-black text-green-600 dark:text-green-400 text-lg">{buTotal}</span></div></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><TrendingUp className="text-blue-500" size={18}/> Progreso Histórico</h4><ZoomableChart data={history} /></div></div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6"><div className="flex items-center justify-between mb-4"><h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><BarChart2 className="text-indigo-500" size={18}/> Detalle de Rendimiento</h4></div>{Object.keys(examsData).map(key => renderDetailTable(key))}</div><div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"><h4 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><Target className="text-purple-500" size={18}/> Medallas y Logros</h4><div className="flex flex-wrap gap-4">{badges.length > 0 ? badges.map(b => (<div key={b.id} className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 px-3 py-2 rounded-lg"><b.icon className="text-yellow-600 dark:text-yellow-400" size={20} /><div><p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">{b.name}</p><p className="text-[10px] text-yellow-600 dark:text-yellow-400">{b.desc}</p></div></div>)) : <p className="text-sm text-gray-400 italic">Completa ejercicios para ganar medallas.</p>}</div></div></div>);
         };
+
+        const LoginScreen = ({ onLogin }) => {
+            const [username, setUsername] = useState("");
+            const [usersList, setUsersList] = useState(() => { const saved = localStorage.getItem('bu_users_list'); return saved ? JSON.parse(saved) : []; });
+            const [isCreating, setIsCreating] = useState(usersList.length === 0);
+            
+            const handleCreate = (e) => { 
+                e.preventDefault(); 
+                if(!username.trim()) return; 
+                const name = username.trim(); 
+                if (!usersList.includes(name)) { 
+                    const newList = [...usersList, name]; 
+                    setUsersList(newList); 
+                    localStorage.setItem('bu_users_list', JSON.stringify(newList)); 
+                } 
+                onLogin(name); 
+            };
+            
+            const handleImport = (event) => { 
+                const file = event.target.files[0]; 
+                if (!file) return; 
+                const reader = new FileReader(); 
+                reader.onload = (e) => { 
+                    try { 
+                        const data = JSON.parse(e.target.result); 
+                        const u = data.user;
+                        if (confirm(`Importar perfil de ${u}?`)) { 
+                            localStorage.setItem(`bu_scores_${u}`, JSON.stringify(data.scores || {})); 
+                            localStorage.setItem(`bu_notes_${u}`, JSON.stringify(data.notes || {})); 
+                            localStorage.setItem(`bu_history_${u}`, JSON.stringify(data.history || [])); 
+                            
+                            if (!usersList.includes(u)) {
+                                const newList = [...usersList, u];
+                                setUsersList(newList);
+                                localStorage.setItem('bu_users_list', JSON.stringify(newList));
+                            }
+                            onLogin(u);
+                        } 
+                    } catch (err) { alert("Error al importar."); } 
+                }; 
+                reader.readAsText(file); 
+            };
+
+            const handleDelete = (name) => { if(confirm(`¿Borrar a ${name}?`)) { const newList = usersList.filter(u => u !== name); setUsersList(newList); localStorage.setItem('bu_users_list', JSON.stringify(newList)); localStorage.removeItem(`bu_scores_${name}`); localStorage.removeItem(`bu_history_${name}`); if(usersList.length === 1) setIsCreating(true); } };
+            const fileInputRef = useRef(null);
+
+            return (<div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 px-4 relative overflow-hidden animate-in-fade">
+                <div className="max-w-2xl w-full relative z-10">
+                    <div className="text-center mb-10">
+                        <h1 className="text-5xl font-black text-white mb-1 tracking-tight uppercase">TIRO MAESTRO</h1>
+                        <p className="text-gray-400 uppercase tracking-widest text-sm">Examen Pool</p>
+                    </div>
+                    
+                    {!isCreating ? (
+                         <div className="grid grid-cols-2 gap-4">
+                             {/* Opción 1: Nuevo Perfil (Amarilla) */}
+                             <button onClick={() => setIsCreating(true)} className="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition group">
+                                <div className="w-12 h-12 rounded-full bg-yellow-500 text-black font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">1</div>
+                                <span className="text-white font-bold text-sm uppercase tracking-wide">Nuevo Perfil</span>
+                             </button>
+
+                             {/* Opción 2: Cargar Perfil (Azul) */}
+                             {usersList.length > 0 && (
+                                 <div className="relative group">
+                                    <button className="w-full h-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition">
+                                        <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">2</div>
+                                        <span className="text-white font-bold text-sm uppercase tracking-wide">Cargar Perfil</span>
+                                    </button>
+                                    <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden hidden group-hover:block z-50">
+                                        {usersList.map(u => (
+                                            <div key={u} onClick={() => onLogin(u)} className="p-3 hover:bg-slate-700 cursor-pointer text-center border-b border-slate-700 last:border-0">
+                                                <span className="text-white font-bold">{u}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                 </div>
+                             )}
+
+                             {/* Opción 3: Importar (Roja) */}
+                             <button onClick={() => fileInputRef.current.click()} className="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition group">
+                                <div className="w-12 h-12 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">3</div>
+                                <span className="text-white font-bold text-sm uppercase tracking-wide">Importar</span>
+                                <input type="file" ref={fileInputRef} onChange={handleImport} className="hidden" accept=".json" />
+                             </button>
+
+                             {/* Opción 8: Invitado (Negra) */}
+                             <button onClick={() => onLogin("Invitado")} className="bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl p-6 flex flex-col items-center gap-3 transition group">
+                                <div className="w-12 h-12 rounded-full bg-black border border-gray-600 text-white font-bold flex items-center justify-center text-xl shadow-lg group-hover:scale-110 transition">8</div>
+                                <span className="text-white font-bold text-sm uppercase tracking-wide">Invitado</span>
+                             </button>
+                         </div>
+                    ) : (
+                        <div className="max-w-md mx-auto bg-slate-800 p-8 rounded-2xl shadow-2xl relative border border-slate-700">
+                             <button onClick={() => setIsCreating(false)} className="absolute top-4 left-4 text-gray-400 hover:text-white"><ChevronLeft size={24} /></button>
+                             <h3 className="text-2xl font-bold text-white mb-6 text-center">CREAR PERFIL</h3>
+                             <form onSubmit={handleCreate}>
+                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Nombre del Jugador" className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl mb-4 text-center text-lg text-white outline-none focus:border-blue-500 transition font-bold" autoFocus />
+                                <button type="submit" disabled={!username.trim()} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition disabled:opacity-50 uppercase tracking-wider shadow-lg">COMENZAR</button>
+                             </form>
+                        </div>
+                    )}
+
+                    {!isCreating && (
+                        <div className="mt-12">
+                            <button className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl shadow-lg uppercase tracking-widest transition transform hover:scale-105">
+                                TIRO MAESTRO (EXAMEN POOL)
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>);
+        };
+
         const Header = ({ goHome, onProfileClick, user, onLogout, resetData, ExtraContent, darkMode, toggleDarkMode }) => (
-            <header className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-gray-800"><div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}><div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200"><Target className="text-white w-7 h-7" /></div><div className="hidden sm:block"><h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1><p className="text-[10px] text-gray-400 uppercase tracking-widest">Examen Pool</p></div></div><div className="flex gap-3 items-center">{ExtraContent}<button onClick={toggleDarkMode} className="p-2 text-gray-400 hover:text-yellow-400 transition">{darkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>{user && <React.Fragment><button onClick={resetData} className="p-2 text-gray-400 hover:text-red-400"><Trash2 size={20}/></button><button onClick={onProfileClick} className="flex items-center gap-2 bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700"><div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">{user.charAt(0).toUpperCase()}</div><span className="font-medium hidden sm:inline text-sm">{user}</span></button><button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400"><LogOut size={20}/></button></React.Fragment>}</div></header>
+            <header className="bg-slate-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-40 border-b border-slate-800"><div className="flex items-center gap-3 cursor-pointer group" onClick={goHome}><div className="bg-gradient-to-br from-green-500 to-green-700 p-2 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-200"><Target className="text-white w-7 h-7" /></div><div className="hidden sm:block"><h1 className="text-2xl font-extrabold tracking-tight leading-none">TIRO MAESTRO</h1><p className="text-[10px] text-gray-400 uppercase tracking-widest">Examen Pool</p></div></div><div className="flex gap-3 items-center">{ExtraContent}<button onClick={toggleDarkMode} className="p-2 text-gray-400 hover:text-yellow-400 transition">{darkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>{user && <React.Fragment><button onClick={resetData} className="p-2 text-gray-400 hover:text-red-400"><Trash2 size={20}/></button><button onClick={onProfileClick} className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700"><div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold">{user.charAt(0).toUpperCase()}</div><span className="font-medium hidden sm:inline text-sm">{user}</span></button><button onClick={onLogout} className="p-2 text-gray-400 hover:text-red-400"><LogOut size={20}/></button></React.Fragment>}</div></header>
         );
+
         const Glossary = ({ goBack }) => {
             const [search, setSearch] = useState("");
             return (
@@ -780,8 +878,8 @@
         };
 
         const App = () => {
-            const [user, setUser] = useState(localStorage.getItem('bu_current_user') || null);
-            const [view, setView] = useState(user ? 'home' : 'login'); 
+            const [user, setUser] = useState(null); 
+            const [view, setView] = useState('login'); 
             const [selectedExam, setSelectedExam] = useState(null);
             const [activeDrillFromHistory, setActiveDrillFromHistory] = useState(null);
             const [allScores, setAllScores] = useState({});
@@ -795,45 +893,32 @@
                 localStorage.setItem('bu_dark_mode', darkMode);
             }, [darkMode]);
 
-            useEffect(() => {
-                if (user) {
-                    const savedScores = localStorage.getItem(`bu_scores_${user}`);
-                    const savedNotes = localStorage.getItem(`bu_notes_${user}`);
-                    const savedHistory = localStorage.getItem(`bu_history_${user}`);
-                    
-                    let parsedScores = {};
-                    try {
-                         parsedScores = savedScores ? JSON.parse(savedScores) : {};
-                    } catch(e) { console.log("Error parsing scores", e); }
+            const loadUserData = (u) => {
+                const savedScores = localStorage.getItem(`bu_scores_${u}`);
+                const savedNotes = localStorage.getItem(`bu_notes_${u}`);
+                const savedHistory = localStorage.getItem(`bu_history_${u}`);
+                
+                setAllScores(savedScores ? JSON.parse(savedScores) : {});
+                setNotes(savedNotes ? JSON.parse(savedNotes) : {});
+                setHistory(savedHistory ? JSON.parse(savedHistory) : []);
+            };
 
-                    setAllScores(parsedScores);
-                    setNotes(savedNotes ? JSON.parse(savedNotes) : {});
-                    setHistory(savedHistory ? JSON.parse(savedHistory) : []);
-                    
-                    if(parsedScores) {
-                        let total = 0;
-                        Object.values(parsedScores).forEach(exam => {
-                            Object.values(exam).forEach(val => {
-                                total += getSafeScore(val);
-                            });
-                        });
+            const handleLogin = (u) => { 
+                localStorage.setItem('bu_current_user', u); 
+                setUser(u); 
+                loadUserData(u);
+                setView('home'); 
+            };
 
-                        const today = new Date().toISOString().split('T')[0];
-                        const hist = savedHistory ? JSON.parse(savedHistory) : [];
-                        const newHist = hist.filter(h => h.date !== today);
-                        newHist.push({ date: today, score: total });
-                        if(newHist.length > 30) newHist.shift();
-                        setHistory(newHist);
-                        localStorage.setItem(`bu_history_${user}`, JSON.stringify(newHist));
-                    }
-                    setView('home');
-                } else { setView('login'); }
-            }, [user]);
+            const handleLogout = () => { 
+                localStorage.removeItem('bu_current_user'); 
+                setUser(null); 
+                setAllScores({}); 
+                setNotes({}); 
+                setView('login'); 
+            };
 
-            const handleLogin = (u) => { localStorage.setItem('bu_current_user', u); setUser(u); };
-            const handleLogout = () => { localStorage.removeItem('bu_current_user'); setUser(null); setAllScores({}); setNotes({}); setView('login'); };
             const updateScore = (eId, dId, val, att) => { 
-                // Save both score (val) and attempts (att)
                 const newScores = { ...allScores, [eId]: { ...(allScores[eId] || {}), [dId]: {score: val, attempts: att} } }; 
                 setAllScores(newScores); 
                 localStorage.setItem(`bu_scores_${user}`, JSON.stringify(newScores)); 
@@ -844,19 +929,19 @@
             const resetExamScore = (eId) => { const ns = { ...allScores }; delete ns[eId]; setAllScores(ns); localStorage.setItem(`bu_scores_${user}`, JSON.stringify(ns)); };
             const resetAllData = () => { if(confirm("¿Borrar todo?")) { setAllScores({}); setNotes({}); localStorage.removeItem(`bu_scores_${user}`); localStorage.removeItem(`bu_notes_${user}`); localStorage.removeItem(`bu_history_${user}`); } };
 
-            // --- NAVEGACIÓN DESDE HISTORIAL ---
             const handleDrillSelectFromHistory = (exam, drill) => {
                 setSelectedExam(exam);
                 setActiveDrillFromHistory(drill);
                 setView('exam');
             };
             
-            if (!user) return <LoginScreen onLogin={handleLogin} />;
+            if (view === 'login' || !user) return <LoginScreen onLogin={handleLogin} />;
+
             return (
-                <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
+                <div className="min-h-screen flex flex-col bg-slate-900 font-sans text-gray-100 transition-colors duration-300">
                     <Header goHome={() => {setSelectedExam(null); setView('home');}} onProfileClick={() => setView('profile')} user={user} onLogout={handleLogout} resetData={resetAllData} ExtraContent={<SessionTimer />} darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
-                    <main className="flex-grow">{view === 'home' && <div className="max-w-5xl mx-auto p-6"><div className="text-center mb-12 mt-8"><h1 className="text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">TIRO MAESTRO</h1><p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p></div><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">{Object.values(examsData).map(exam => <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />)}</div><div className="flex justify-center"><button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-600 dark:text-gray-300 hover:text-blue-600 font-bold transition px-8 py-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md"><BookOpen size={24} className="text-blue-500" /> Glosario</button></div></div>}{view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} onExport={handleExport} onImport={handleImport} history={history} onDrillSelect={handleDrillSelectFromHistory} />}{view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); setActiveDrillFromHistory(null); }} user={user} scores={allScores} updateScore={updateScore} resetExamScore={resetExamScore} notes={notes} saveNote={saveNote} initialActiveDrill={activeDrillFromHistory} />}{view === 'glossary' && <Glossary goBack={() => setView('home')} />}</main>
-                    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-8 text-center"><div className="max-w-2xl mx-auto"><div className="flex justify-center items-center gap-2 mb-4 text-gray-400"><GraduationCap size={24} /></div><p className="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p><p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">Basado en el currículo del <strong className="text-gray-600 dark:text-gray-300">Dr. Dave Alciatore</strong>.<br/>Desarrollado por <strong className="text-gray-600 dark:text-gray-300">Juan Miguel Rios Redondo</strong>.</p><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold mt-3 text-sm hover:underline">Tiro Maestro (Entrenamiento)</a></div></footer>
+                    <main className="flex-grow">{view === 'home' && <div className="max-w-5xl mx-auto p-6"><div className="text-center mb-12 mt-8"><h1 className="text-5xl font-black text-white mb-4 tracking-tight">TIRO MAESTRO</h1><p className="text-xl text-gray-400 max-w-2xl mx-auto font-light">Plan de Evaluación Profesional</p></div><div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">{Object.values(examsData).map(exam => <ExamCard key={exam.id} exam={exam} onSelect={(e) => { setSelectedExam(e); setView('exam'); }} />)}</div><div className="flex justify-center"><button onClick={() => setView('glossary')} className="flex items-center gap-3 text-gray-300 hover:text-blue-400 font-bold transition px-8 py-4 bg-slate-800 rounded-2xl shadow-sm border border-slate-700 hover:shadow-md"><BookOpen size={24} className="text-blue-500" /> Glosario</button></div></div>}{view === 'profile' && <UserProfile user={user} scores={allScores} goBack={() => setView('home')} onExport={handleExport} onImport={handleImport} history={history} onDrillSelect={handleDrillSelectFromHistory} />}{view === 'exam' && selectedExam && <ExamDetail exam={selectedExam} onBack={() => { setSelectedExam(null); setView('home'); setActiveDrillFromHistory(null); }} user={user} scores={allScores} updateScore={updateScore} resetExamScore={resetExamScore} notes={notes} saveNote={saveNote} initialActiveDrill={activeDrillFromHistory} />}{view === 'glossary' && <Glossary goBack={() => setView('home')} />}</main>
+                    <footer className="bg-slate-900 border-t border-slate-800 p-8 text-center"><div className="max-w-2xl mx-auto"><div className="flex justify-center items-center gap-2 mb-4 text-gray-500"><GraduationCap size={24} /></div><p className="text-sm text-gray-400 mb-2 font-medium">&copy; 2025 Tiro Maestro App</p><p className="text-xs text-gray-500 leading-relaxed">Basado en el currículo del <strong className="text-gray-600 dark:text-gray-300">Dr. Dave Alciatore</strong>.<br/>Desarrollado por <strong className="text-gray-600 dark:text-gray-300">Juan Miguel Rios Redondo</strong>.</p><a href="https://juanmiguel0927.github.io/Pool/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold mt-3 text-sm hover:underline">Tiro Maestro (Entrenamiento)</a></div></footer>
                 </div>
             );
         };
